@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../theme/app_theme.dart';
 import 'dashboard_inherited.dart';
 import 'tabs/overview_tab.dart';
 import 'tabs/pets_tab.dart';
@@ -32,7 +33,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F1A),
+      backgroundColor: AppTheme.background,
       body: DashboardScope(
         currentIndex: _currentIndex,
         onTabSwitch: switchTab,
@@ -45,50 +46,63 @@ class _DashboardScreenState extends State<DashboardScreen> {
         data: NavigationBarThemeData(
           labelTextStyle: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.selected)) {
-              return GoogleFonts.inter(
-                fontSize: 11,
-                color: const Color(0xFF6C63FF),
+              return GoogleFonts.nunito(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.primary,
               );
             }
-            return GoogleFonts.inter(
+            return GoogleFonts.nunito(
               fontSize: 11,
-              color: const Color(0xFF94A3B8),
+              fontWeight: FontWeight.w600,
+              color: AppTheme.textSecondary,
             );
           }),
         ),
-        child: NavigationBar(
-          selectedIndex: _currentIndex,
-          onDestinationSelected: switchTab,
-          backgroundColor: const Color(0xFF1A1A2E),
-          indicatorColor: const Color(0xFF6C63FF).withOpacity(0.2),
-          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.dashboard_outlined, color: Color(0xFF94A3B8)),
-              selectedIcon: Icon(Icons.dashboard, color: Color(0xFF6C63FF)),
-              label: "Overview",
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.pets_outlined, color: Color(0xFF94A3B8)),
-              selectedIcon: Icon(Icons.pets, color: Color(0xFF6C63FF)),
-              label: "My Pets",
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.calendar_month_outlined, color: Color(0xFF94A3B8)),
-              selectedIcon: Icon(Icons.calendar_month, color: Color(0xFF6C63FF)),
-              label: "Appointments",
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.health_and_safety_outlined, color: Color(0xFF94A3B8)),
-              selectedIcon: Icon(Icons.health_and_safety, color: Color(0xFF6C63FF)),
-              label: "Health",
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.settings_outlined, color: Color(0xFF94A3B8)),
-              selectedIcon: Icon(Icons.settings, color: Color(0xFF6C63FF)),
-              label: "Settings",
-            ),
-          ],
+        child: Container(
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 20,
+                offset: const Offset(0, -5),
+              ),
+            ],
+          ),
+          child: NavigationBar(
+            selectedIndex: _currentIndex,
+            onDestinationSelected: switchTab,
+            backgroundColor: AppTheme.surface,
+            indicatorColor: AppTheme.primary.withOpacity(0.15),
+            labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.dashboard_outlined, color: AppTheme.textSecondary),
+                selectedIcon: Icon(Icons.dashboard_rounded, color: AppTheme.primary),
+                label: "Overview",
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.pets_outlined, color: AppTheme.textSecondary),
+                selectedIcon: Icon(Icons.pets_rounded, color: AppTheme.primary),
+                label: "My Pets",
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.calendar_month_outlined, color: AppTheme.textSecondary),
+                selectedIcon: Icon(Icons.calendar_month_rounded, color: AppTheme.primary),
+                label: "Schedule", // Shortened
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.health_and_safety_outlined, color: AppTheme.textSecondary),
+                selectedIcon: Icon(Icons.health_and_safety_rounded, color: AppTheme.primary),
+                label: "Health",
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.settings_outlined, color: AppTheme.textSecondary),
+                selectedIcon: Icon(Icons.settings_rounded, color: AppTheme.primary),
+                label: "Settings",
+              ),
+            ],
+          ),
         ),
       ),
     );

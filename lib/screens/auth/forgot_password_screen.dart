@@ -48,21 +48,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   InputDecoration _buildInputDecoration(String label, IconData prefixIcon) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: AppTheme.textSecondary),
+      labelStyle: GoogleFonts.nunito(color: AppTheme.textSecondary),
       prefixIcon: Icon(prefixIcon, color: AppTheme.textSecondary),
       filled: true,
-      fillColor: const Color(0xFF1A1A2E),
+      fillColor: AppTheme.surface,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: const Color(0xFF94A3B8).withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: const Color(0xFF94A3B8).withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: AppTheme.textSecondary.withOpacity(0.1)),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppTheme.primary),
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: AppTheme.primary, width: 2),
       ),
     );
   }
@@ -74,7 +74,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.textPrimary),
           onPressed: () => context.pop(),
         ),
       ),
@@ -88,25 +88,27 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               const SizedBox(height: 24),
               Text(
                 "Reset Password",
-                style: GoogleFonts.spaceGrotesk(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                style: GoogleFonts.outfit(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 "Enter your email and we'll send a reset link.",
-                style: GoogleFonts.inter(
+                style: GoogleFonts.nunito(
                   fontSize: 16,
+                  fontWeight: FontWeight.w600,
                   color: AppTheme.textSecondary,
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 48),
               TextFormField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
-                decoration: _buildInputDecoration("Email", Icons.email_outlined),
+                style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                decoration: _buildInputDecoration("Email Address", Icons.email_outlined),
                 validator: (val) {
                   if (val == null || val.isEmpty) return 'Email is required';
                   if (!val.contains('@')) return 'Enter a valid email';
@@ -114,7 +116,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 },
                 enabled: !_emailSent,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
               ValueListenableBuilder(
                 valueListenable: _authProvider,
                 builder: (context, state, child) {
@@ -125,7 +127,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         isLoading: state.isLoading,
                         onPressed: _emailSent ? null : _handleReset,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       if (_emailSent)
                         const SuccessCard(message: "Reset link sent! Check your inbox.")
                       else if (state.error != null)

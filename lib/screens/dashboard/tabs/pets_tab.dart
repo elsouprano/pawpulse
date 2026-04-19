@@ -41,11 +41,13 @@ class _MyPetsTabState extends State<MyPetsTab> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F1A),
+      backgroundColor: AppTheme.background,
       floatingActionButton: FloatingActionButton(
         onPressed: () => AddPetBottomSheet.show(context, _petProvider),
         backgroundColor: AppTheme.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+        elevation: 8,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: const Icon(Icons.add_rounded, color: AppTheme.background, size: 28),
       ),
       body: SafeArea(
         child: Stack(
@@ -54,14 +56,20 @@ class _MyPetsTabState extends State<MyPetsTab> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
                   child: Row(
                     children: [
-                      Text("My Pets", style: GoogleFonts.spaceGrotesk(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+                      Text("My Pets", style: GoogleFonts.outfit(fontSize: 28, fontWeight: FontWeight.w900, color: AppTheme.textPrimary)),
                       const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.add, color: AppTheme.primary),
-                        onPressed: () => AddPetBottomSheet.show(context, _petProvider),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withOpacity(0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.add_rounded, color: AppTheme.primary),
+                          onPressed: () => AddPetBottomSheet.show(context, _petProvider),
+                        ),
                       ),
                     ],
                   ),
@@ -79,12 +87,12 @@ class _MyPetsTabState extends State<MyPetsTab> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.pets, size: 72, color: AppTheme.textSecondary.withValues(alpha: 0.4)),
-                              const SizedBox(height: 16),
-                              Text("No pets yet", style: GoogleFonts.spaceGrotesk(fontSize: 20, color: Colors.white)),
-                              const SizedBox(height: 8),
-                              Text("Add your first pet to get started", style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary)),
+                              Icon(Icons.pets_rounded, size: 80, color: AppTheme.textSecondary.withOpacity(0.2)),
                               const SizedBox(height: 24),
+                              Text("No pets yet", style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
+                              const SizedBox(height: 8),
+                              Text("Add your first pet to get started", style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+                              const SizedBox(height: 32),
                               SizedBox(
                                 width: 200,
                                 child: GradientButton(
@@ -92,19 +100,21 @@ class _MyPetsTabState extends State<MyPetsTab> {
                                   onPressed: () => AddPetBottomSheet.show(context, _petProvider),
                                 ),
                               ),
+                              const SizedBox(height: 60), // offset for visual balance
                             ],
                           ),
                         );
                       }
 
                       return GridView.builder(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.all(20.0), // increased padding
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 0.78,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 0.68, // adjusted for aesthetic card look natively
                         ),
+                        physics: const BouncingScrollPhysics(),
                         itemCount: state.petList.length + 1,
                         itemBuilder: (context, index) {
                           if (index == state.petList.length) {
@@ -113,15 +123,23 @@ class _MyPetsTabState extends State<MyPetsTab> {
                               child: Container(
                                 decoration: BoxDecoration(
                                   color: AppTheme.surface,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.3)),
+                                  borderRadius: AppTheme.cardRadius,
+                                  border: Border.all(color: AppTheme.textSecondary.withOpacity(0.15), width: 1.5),
+                                  boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
                                 ),
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const Icon(Icons.add_circle_outline, size: 40, color: AppTheme.primary),
-                                    const SizedBox(height: 12),
-                                    Text("Add Pet", style: GoogleFonts.inter(fontSize: 14, color: AppTheme.primary)),
+                                    Container(
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.primary.withOpacity(0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(Icons.add_rounded, size: 36, color: AppTheme.primary),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text("Add Pet", style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
                                   ],
                                 ),
                               ),
@@ -151,28 +169,29 @@ class _MyPetsTabState extends State<MyPetsTab> {
                   );
                 },
                 child: Container(
-                  width: 56,
-                  height: 56,
+                  width: 64,
+                  height: 64,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF6C63FF), Color(0xFF00D4AA)],
+                      colors: [AppTheme.primary, AppTheme.accent],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.primary.withValues(alpha: 0.4),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
+                        color: AppTheme.primary.withOpacity(0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 6),
                       ),
                     ],
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.document_scanner_outlined, color: Colors.white, size: 20),
-                      Text("AI", style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white)),
+                      const Icon(Icons.document_scanner_rounded, color: AppTheme.background, size: 24),
+                      const SizedBox(height: 2),
+                      Text("SCAN", style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.w900, color: AppTheme.background, letterSpacing: 1.0)),
                     ],
                   ),
                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_theme.dart';
 
 class GradientButton extends StatelessWidget {
   final String label;
@@ -19,37 +20,51 @@ class GradientButton extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(Radius.circular(999)),
+        borderRadius: AppTheme.buttonRadius,
         gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF6C63FF).withOpacity(isDisabled ? 0.5 : 1.0),
-            const Color(0xFF8B5CF6).withOpacity(isDisabled ? 0.5 : 1.0),
+            AppTheme.secondary.withOpacity(isDisabled ? 0.3 : 1.0),
+            AppTheme.primary.withOpacity(isDisabled ? 0.5 : 1.0),
           ],
         ),
+        boxShadow: isDisabled
+            ? null
+            : [
+                BoxShadow(
+                  color: AppTheme.primary.withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                )
+              ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: const BorderRadius.all(Radius.circular(999)),
+          borderRadius: AppTheme.buttonRadius,
           onTap: isDisabled ? null : onPressed,
+          splashColor: AppTheme.secondary.withOpacity(0.3),
+          highlightColor: AppTheme.primaryDark.withOpacity(0.1),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            padding: const EdgeInsets.symmetric(vertical: 18.0),
             child: Center(
               child: isLoading
                   ? const SizedBox(
-                      width: 18,
-                      height: 18,
+                      width: 20,
+                      height: 20,
                       child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
+                        color: AppTheme.textPrimary,
+                        strokeWidth: 2.5,
                       ),
                     )
                   : Text(
                       label,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppTheme.background,
                         fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
                       ),
                     ),
             ),

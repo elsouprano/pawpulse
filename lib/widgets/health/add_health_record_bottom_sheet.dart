@@ -24,7 +24,7 @@ class AddHealthRecordBottomSheet extends StatefulWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
       builder: (_) => AddHealthRecordBottomSheet(
         healthRecordService: healthRecordService,
@@ -63,9 +63,12 @@ class _AddHealthRecordBottomSheetState extends State<AddHealthRecordBottomSheet>
         data: Theme.of(context).copyWith(
           colorScheme: const ColorScheme.dark(
             primary: AppTheme.primary,
-            onPrimary: Colors.white,
+            onPrimary: AppTheme.background,
             surface: AppTheme.surface,
-            onSurface: Colors.white,
+            onSurface: AppTheme.textPrimary,
+          ),
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(foregroundColor: AppTheme.primary),
           ),
         ),
         child: child!,
@@ -100,11 +103,17 @@ class _AddHealthRecordBottomSheetState extends State<AddHealthRecordBottomSheet>
       if (result is! Failure) { // Wait, result handling logic depends on how Failure is returned
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Record saved!')),
+          SnackBar(
+            content: Text('Record saved!', style: GoogleFonts.nunito(fontWeight: FontWeight.bold)),
+            backgroundColor: AppTheme.success,
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to save record.')),
+          SnackBar(
+            content: Text('Failed to save record.', style: GoogleFonts.nunito(fontWeight: FontWeight.bold)),
+            backgroundColor: AppTheme.error,
+          ),
         );
       }
     }
@@ -113,21 +122,21 @@ class _AddHealthRecordBottomSheetState extends State<AddHealthRecordBottomSheet>
   InputDecoration _buildInputDecoration(String label, {IconData? prefixIcon}) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: AppTheme.textSecondary),
+      labelStyle: GoogleFonts.nunito(color: AppTheme.textSecondary),
       prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: AppTheme.textSecondary) : null,
       filled: true,
-      fillColor: const Color(0xFF1A1A2E),
+      fillColor: AppTheme.background,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: const Color(0xFF94A3B8).withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: const Color(0xFF94A3B8).withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: AppTheme.textSecondary.withOpacity(0.1)),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppTheme.primary),
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: AppTheme.primary, width: 2),
       ),
     );
   }
@@ -144,30 +153,30 @@ class _AddHealthRecordBottomSheetState extends State<AddHealthRecordBottomSheet>
         return Container(
           decoration: const BoxDecoration(
             color: AppTheme.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
           ),
           child: Column(
             children: [
               Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 40,
-                height: 4,
+                margin: const EdgeInsets.symmetric(vertical: 16),
+                width: 48,
+                height: 6,
                 decoration: BoxDecoration(
                   color: AppTheme.textSecondary.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(3),
                 ),
               ),
               Expanded(
                 child: ListView(
                   controller: controller,
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                   children: [
                     Text(
                       "Add Health Record",
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                      style: GoogleFonts.outfit(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -179,7 +188,8 @@ class _AddHealthRecordBottomSheetState extends State<AddHealthRecordBottomSheet>
                           DropdownButtonFormField<String>(
                             value: _typeValue,
                             decoration: _buildInputDecoration("Type"),
-                            dropdownColor: AppTheme.background,
+                            dropdownColor: AppTheme.card,
+                            style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
                             items: const [
                               DropdownMenuItem(value: 'Vaccination', child: Text('Vaccination')),
                               DropdownMenuItem(value: 'Check-up', child: Text('Check-up')),
@@ -189,52 +199,55 @@ class _AddHealthRecordBottomSheetState extends State<AddHealthRecordBottomSheet>
                             onChanged: (v) => setState(() => _typeValue = v),
                             validator: (v) => v == null ? 'Required' : null,
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 16),
                           TextFormField(
                             controller: _vetNameCtrl,
-                            decoration: _buildInputDecoration("Vet Name", prefixIcon: Icons.person_outline),
+                            style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                            decoration: _buildInputDecoration("Vet Name", prefixIcon: Icons.person_outline_rounded),
                             validator: (v) => v!.isEmpty ? 'Required' : null,
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 16),
                           GestureDetector(
                             onTap: _pickDate,
                             child: Container(
-                              padding: const EdgeInsets.all(14),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF1A1A2E),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: AppTheme.textSecondary.withOpacity(0.3)),
+                                color: AppTheme.background,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: AppTheme.textSecondary.withOpacity(0.1)),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.calendar_today_outlined, color: AppTheme.textSecondary, size: 18),
-                                  const SizedBox(width: 8),
+                                  const Icon(Icons.calendar_today_rounded, color: AppTheme.textSecondary, size: 20),
+                                  const SizedBox(width: 12),
                                   Text(
                                     formattedDate,
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.white,
+                                    style: GoogleFonts.nunito(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.textPrimary,
                                     ),
                                   ),
                                   const Spacer(),
-                                  const Icon(Icons.chevron_right, color: AppTheme.textSecondary, size: 18),
+                                  const Icon(Icons.chevron_right_rounded, color: AppTheme.textSecondary, size: 20),
                                 ],
                               ),
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 16),
                           TextFormField(
                             controller: _notesCtrl,
                             maxLines: 3,
-                            decoration: _buildInputDecoration("Notes (optional)", prefixIcon: Icons.notes_outlined),
+                            style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                            decoration: _buildInputDecoration("Notes (optional)", prefixIcon: Icons.notes_rounded),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 32),
                           GradientButton(
                             label: "Save Record",
                             isLoading: _isLoading,
                             onPressed: _handleSave,
                           ),
-                          SizedBox(height: MediaQuery.of(context).viewInsets.bottom + 16),
+                          SizedBox(height: MediaQuery.of(context).viewInsets.bottom + 24),
                         ],
                       ),
                     ),

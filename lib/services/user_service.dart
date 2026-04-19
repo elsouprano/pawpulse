@@ -46,7 +46,7 @@ class UserService {
       await _firestore
           .collection(FirebaseConstants.usersCollection)
           .doc(user.uid)
-          .update(user.toFirestore());
+          .set(user.toFirestore(), SetOptions(merge: true));
       return const Success(null);
     } catch (e) {
       return Failure(GeneralException('Failed to update user profile: $e'));

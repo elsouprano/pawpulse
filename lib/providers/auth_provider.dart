@@ -25,9 +25,10 @@ class AuthState {
     bool? isLoading,
     String? error,
     bool clearError = false,
+    bool clearUser = false,
   }) {
     return AuthState(
-      currentUser: currentUser ?? this.currentUser,
+      currentUser: clearUser ? null : (currentUser ?? this.currentUser),
       isLoading: isLoading ?? this.isLoading,
       error: clearError ? null : (error ?? this.error),
     );
@@ -41,6 +42,7 @@ class AuthProvider extends ValueNotifier<AuthState> {
     _authService.authStateChanges.listen((user) {
       value = value.copyWith(
         currentUser: user, 
+        clearUser: user == null,
         clearError: true,
         isLoading: false, // Fix for Windows plugin where the Future hangs but the stream fires!
       );
@@ -73,7 +75,7 @@ class AuthProvider extends ValueNotifier<AuthState> {
     if (result is Failure) {
       value = value.copyWith(isLoading: false, error: (result as Failure).error.toString());
     } else {
-      value = value.copyWith(isLoading: false, currentUser: null);
+      value = value.copyWith(isLoading: false, clearUser: true);
     }
   }
 

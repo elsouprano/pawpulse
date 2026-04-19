@@ -27,76 +27,88 @@ class AppointmentCard extends StatelessWidget {
     final monthStr = DateFormat('MMM').format(dt).toUpperCase();
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: AppTheme.card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        borderRadius: AppTheme.cardRadius,
+        border: Border.all(color: AppTheme.textSecondary.withOpacity(0.05)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(16.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 48,
-            height: 52,
+            width: 52,
+            height: 56,
             decoration: BoxDecoration(
               color: AppTheme.primary.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.primary.withOpacity(0.3)),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   dayStr,
-                  style: GoogleFonts.spaceGrotesk(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                  style: GoogleFonts.outfit(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
                     color: AppTheme.primary,
                   ),
                 ),
                 Text(
                   monthStr,
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
+                  style: GoogleFonts.nunito(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
                     color: AppTheme.textSecondary,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   appointment.vetName,
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                  style: GoogleFonts.outfit(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textPrimary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
                 Text(
                   appointment.type,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.nunito(
                     fontSize: 13,
-                    color: AppTheme.textSecondary,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.secondary,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Row(
                   children: [
-                    const Icon(Icons.pets, size: 12, color: AppTheme.textSecondary),
-                    const SizedBox(width: 4),
+                    const Icon(Icons.pets_rounded, size: 14, color: AppTheme.textSecondary),
+                    const SizedBox(width: 6),
                     Text(
                       petName ?? "Pet", // Fallback to "Pet" if mapped name isn't provided directly
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
+                      style: GoogleFonts.nunito(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
                         color: AppTheme.textSecondary,
                       ),
                     ),
@@ -109,11 +121,12 @@ class AppointmentCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               _StatusChip(status: appointment.status),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, size: 18, color: AppTheme.textSecondary),
+                icon: const Icon(Icons.more_vert_rounded, size: 20, color: AppTheme.textSecondary),
                 padding: EdgeInsets.zero,
                 color: AppTheme.surface,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 onSelected: (value) {
                   if (value == "reschedule" && onReschedule != null) {
                     onReschedule!();
@@ -126,9 +139,9 @@ class AppointmentCard extends StatelessWidget {
                     value: "reschedule",
                     child: Row(
                       children: [
-                        const Icon(Icons.edit_calendar, size: 18, color: Colors.white),
-                        const SizedBox(width: 8),
-                        Text("Reschedule", style: GoogleFonts.inter(fontSize: 14, color: Colors.white)),
+                        const Icon(Icons.edit_calendar_rounded, size: 18, color: AppTheme.textPrimary),
+                        const SizedBox(width: 12),
+                        Text("Reschedule", style: GoogleFonts.nunito(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
                       ],
                     ),
                   ),
@@ -137,8 +150,8 @@ class AppointmentCard extends StatelessWidget {
                     child: Row(
                       children: [
                         const Icon(Icons.cancel_outlined, size: 18, color: AppTheme.error),
-                        const SizedBox(width: 8),
-                        Text("Cancel", style: GoogleFonts.inter(fontSize: 14, color: AppTheme.error)),
+                        const SizedBox(width: 12),
+                        Text("Cancel", style: GoogleFonts.nunito(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.error)),
                       ],
                     ),
                   ),
@@ -163,31 +176,32 @@ class _StatusChip extends StatelessWidget {
 
     final lowerStatus = status.toLowerCase();
     if (lowerStatus.contains('confirmed')) {
-      bgColor = const Color(0xFF00D4AA).withOpacity(0.15);
-      textColor = const Color(0xFF00D4AA);
+      bgColor = AppTheme.success.withOpacity(0.15);
+      textColor = AppTheme.success;
     } else if (lowerStatus.contains('pending')) {
-      bgColor = const Color(0xFFFFB347).withOpacity(0.15);
-      textColor = const Color(0xFFFFB347);
+      bgColor = AppTheme.secondary.withOpacity(0.15);
+      textColor = AppTheme.secondary;
     } else if (lowerStatus.contains('cancel')) {
-      bgColor = const Color(0xFFFF6B6B).withOpacity(0.15);
-      textColor = const Color(0xFFFF6B6B);
+      bgColor = AppTheme.error.withOpacity(0.15);
+      textColor = AppTheme.error;
     } else {
       bgColor = AppTheme.textSecondary.withOpacity(0.15);
       textColor = AppTheme.textSecondary;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        status,
-        style: TextStyle(
+        status.toUpperCase(),
+        style: GoogleFonts.outfit(
           fontSize: 10,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w800,
           color: textColor,
+          letterSpacing: 0.5,
         ),
       ),
     );

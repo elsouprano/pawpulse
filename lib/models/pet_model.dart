@@ -21,6 +21,7 @@ class PetModel extends Equatable {
   final String healthStatus;
   final DateTime? createdAt;
   final String? localImagePath;
+  final List<String> photos;
 
   const PetModel({
     required this.id,
@@ -36,6 +37,7 @@ class PetModel extends Equatable {
     required this.healthStatus,
     this.createdAt,
     this.localImagePath,
+    this.photos = const [],
   });
 
   factory PetModel.fromFirestore(DocumentSnapshot doc) {
@@ -54,6 +56,7 @@ class PetModel extends Equatable {
       healthStatus: data['healthStatus'] ?? '',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
       localImagePath: data['localImagePath'],
+      photos: List<String>.from(data['photos'] ?? []),
     );
   }
 
@@ -71,6 +74,7 @@ class PetModel extends Equatable {
       'healthStatus': healthStatus,
       'createdAt': createdAt == null ? FieldValue.serverTimestamp() : Timestamp.fromDate(createdAt!),
       'localImagePath': localImagePath,
+      'photos': photos,
     };
   }
 
@@ -89,5 +93,6 @@ class PetModel extends Equatable {
         healthStatus,
         createdAt,
         localImagePath,
+        photos,
       ];
 }

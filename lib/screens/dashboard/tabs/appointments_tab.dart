@@ -46,131 +46,143 @@ class _AppointmentsTabState extends State<AppointmentsTab> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Column(
-        children: [
-          // ── Header ──
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Row(
-              children: [
-                Text(
-                  "Appointments",
-                  style: GoogleFonts.spaceGrotesk(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const Spacer(),
-                SizedBox(
-                  width: 130,
-                  height: 38,
-                  child: GradientButton(
-                    label: "Book",
-                    onPressed: () {
-                      final pets = _petProvider.value.petList;
-                      if (pets.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please add a pet first')),
-                        );
-                        return;
-                      }
-                      BookAppointmentBottomSheet.show(context, _appointmentProvider, pets);
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          // ── Filter Chips ──
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          final pets = _petProvider.value.petList;
+          if (pets.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Please add a pet first', style: GoogleFonts.nunito(fontWeight: FontWeight.bold)),
+                backgroundColor: AppTheme.primary,
+              ),
+            );
+            return;
+          }
+          BookAppointmentBottomSheet.show(context, _appointmentProvider, pets);
+        },
+        backgroundColor: AppTheme.primary,
+        elevation: 8,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: const Icon(Icons.add_rounded, color: AppTheme.background, size: 28),
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // ── Header ──
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Row(
-                children: ["All", "Confirmed", "Pending", "Cancelled"].map((label) {
-                  return _FilterChip(
-                    label: label,
-                    isActive: _filter == label,
-                    onTap: () => setState(() => _filter = label),
-                  );
-                }).toList(),
+                children: [
+                  Text(
+                    "Appointments",
+                    style: GoogleFonts.outfit(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-          
-          const SizedBox(height: 16),
-          
-          // ── List ──
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ValueListenableBuilder(
-                valueListenable: _appointmentProvider,
-                builder: (context, dynamic state, child) {
-                  if (state.isLoading) {
-                    return const Center(child: CircularProgressIndicator(color: AppTheme.primary));
-                  }
-
-                  final List<AppointmentModel> all = state.appointments;
-                  final filtered = _filter == "All" 
-                      ? all 
-                      : all.where((a) => a.status.toLowerCase() == _filter.toLowerCase()).toList();
-
-                  if (filtered.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.calendar_month_outlined, size: 64, color: AppTheme.textSecondary.withOpacity(0.4)),
-                          const SizedBox(height: 16),
-                          Text(
-                            "No $_filter appointments",
-                            style: GoogleFonts.spaceGrotesk(fontSize: 18, color: Colors.white),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            "Tap Book to schedule one",
-                            style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary),
-                          ),
-                        ],
-                      ),
+            
+            // ── Filter Chips ──
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: ["All", "Confirmed", "Pending", "Cancelled"].map((label) {
+                    return _FilterChip(
+                      label: label,
+                      isActive: _filter == label,
+                      onTap: () => setState(() => _filter = label),
                     );
-                  }
-
-                  return ListView.builder(
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final appointment = filtered[index];
-                      // Find pet name
-                      final pList = _petProvider.value.petList;
-                      final pet = pList.where((p) => p.id == appointment.petId).firstOrNull;
-
-                      return AppointmentCard(
-                        appointment: appointment,
-                        petName: pet?.name,
-                        onCancel: () async {
-                          await _appointmentProvider.cancelAppointment(appointment.id);
-                          if (mounted && _appointmentProvider.value.error == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Appointment cancelled')),
-                            );
-                          }
-                        },
-                        onReschedule: () {
-                          if (_petProvider.value.petList.isEmpty) return;
-                          BookAppointmentBottomSheet.show(context, _appointmentProvider, _petProvider.value.petList);
-                        },
-                      );
-                    },
-                  );
-                },
+                  }).toList(),
+                ),
               ),
             ),
-          ),
-        ],
+            
+            const SizedBox(height: 16),
+            
+            // ── List ──
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: ValueListenableBuilder(
+                  valueListenable: _appointmentProvider,
+                  builder: (context, dynamic state, child) {
+                    if (state.isLoading) {
+                      return const Center(child: CircularProgressIndicator(color: AppTheme.primary));
+                    }
+
+                    final List<AppointmentModel> all = state.appointments;
+                    final filtered = _filter == "All" 
+                        ? all 
+                        : all.where((a) => a.status.toLowerCase() == _filter.toLowerCase()).toList();
+
+                    if (filtered.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.calendar_month_rounded, size: 80, color: AppTheme.textSecondary.withOpacity(0.2)),
+                            const SizedBox(height: 24),
+                            Text(
+                              "No $_filter appointments",
+                              style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.textPrimary),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "Tap Book to schedule one",
+                              style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final appointment = filtered[index];
+                        // Find pet name
+                        final pList = _petProvider.value.petList;
+                        final pet = pList.where((p) => p.id == appointment.petId).firstOrNull;
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: AppointmentCard(
+                            appointment: appointment,
+                            petName: pet?.name,
+                            onCancel: () async {
+                              await _appointmentProvider.cancelAppointment(appointment.id);
+                              if (mounted && _appointmentProvider.value.error == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Appointment cancelled', style: GoogleFonts.nunito(fontWeight: FontWeight.bold)),
+                                    backgroundColor: AppTheme.success,
+                                  ),
+                                );
+                              }
+                            },
+                            onReschedule: () {
+                              if (_petProvider.value.petList.isEmpty) return;
+                              BookAppointmentBottomSheet.show(context, _appointmentProvider, _petProvider.value.petList);
+                            },
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -192,20 +204,21 @@ class _FilterChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(right: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
           color: isActive ? AppTheme.primary.withOpacity(0.15) : AppTheme.surface,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isActive ? AppTheme.primary : AppTheme.textSecondary.withOpacity(0.3),
+            color: isActive ? AppTheme.primary : AppTheme.textSecondary.withOpacity(0.1),
+            width: isActive ? 2 : 1,
           ),
         ),
         child: Text(
           label,
-          style: GoogleFonts.inter(
-            fontSize: 13,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+          style: GoogleFonts.nunito(
+            fontSize: 14,
+            fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
             color: isActive ? AppTheme.primary : AppTheme.textSecondary,
           ),
         ),

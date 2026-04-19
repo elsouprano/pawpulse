@@ -51,7 +51,10 @@ class AuthService {
 
   Future<Result<void, AuthException>> signOut() async {
     try {
-      await _auth.signOut();
+      await _auth.signOut().timeout(
+        const Duration(milliseconds: 500), 
+        onTimeout: () {},
+      );
       return const Success(null);
     } catch (e) {
       return Failure(AuthException(e.toString()));

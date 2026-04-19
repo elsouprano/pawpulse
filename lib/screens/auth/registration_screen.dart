@@ -1,4 +1,6 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:uuid/uuid.dart';
@@ -9,7 +11,10 @@ import '../../providers/auth_provider.dart';
 import '../../providers/pet_provider.dart';
 import '../../services/auth_service.dart';
 import '../../services/pet_service.dart';
+import '../../services/user_service.dart';
 import '../../models/pet_model.dart';
+import '../../models/user_model.dart';
+import '../../core/utils/validators.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -29,6 +34,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   // Step 1: Account
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController(); // new field
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
   bool _obscurePassword = true;
@@ -47,18 +53,21 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   late final AuthProvider _authProvider;
   late final PetProvider _petProvider;
+  late final UserService _userService;
 
   @override
   void initState() {
     super.initState();
     _authProvider = AuthProvider(AuthService());
     _petProvider = PetProvider(PetService());
+    _userService = UserService();
   }
 
   @override
   void dispose() {
     _nameCtrl.dispose();
     _emailCtrl.dispose();
+    _phoneCtrl.dispose();
     _passwordCtrl.dispose();
     _confirmCtrl.dispose();
     _petNameCtrl.dispose();
@@ -68,8 +77,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     _conditionsCtrl.dispose();
     _allergiesCtrl.dispose();
     _medicationsCtrl.dispose();
-    _authProvider.dispose();
-    _petProvider.dispose();
     super.dispose();
   }
 
@@ -90,7 +97,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   Future<void> _submitRegistration() async {
-    if (!(_formKey3.currentState?.validate() ?? false)) return;
+    FocusManager.instance.primaryFocus?.unfocus();
 
     // 1. Register User Object via AuthProvider
     await _authProvider.register(_emailCtrl.text.trim(), _passwordCtrl.text);
@@ -99,6 +106,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     
     final user = _authProvider.value.currentUser;
     if (user != null) {
+      // 1.5 Create UserObject
+      final newUser = UserModel(
+        uid: user.uid,
+        name: _nameCtrl.text.trim(),
+        email: _emailCtrl.text.trim(),
+        phone: _phoneCtrl.text.trim(),
+        createdAt: DateTime.now(),
+      );
+      await _userService.createUserProfile(newUser);
+      
+      if (user.displayName == null || user.displayName! != _nameCtrl.text.trim()) {
+        await user.updateDisplayName(_nameCtrl.text.trim());
+      }
+
       // 2. Add Pet Object via PetProvider
       final newPet = PetModel(
         id: const Uuid().v4(),
@@ -122,28 +143,81 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
   }
 
-  InputDecoration _buildInputDecoration(String label, {IconData? prefixIcon, Widget? suffixIcon, String? helperText, String? suffixText}) {
+  InputDecoration _buildInputDecoration(String hint, {IconData? prefixIcon, Widget? suffixIcon, String? helperText, String? suffixText}) {
     return InputDecoration(
-      labelText: label,
+      hintText: hint,
       helperText: helperText,
-      helperStyle: const TextStyle(color: AppTheme.textSecondary),
-      labelStyle: const TextStyle(color: AppTheme.textSecondary),
+      helperStyle: GoogleFonts.nunito(color: AppTheme.textSecondary.withOpacity(0.7), fontSize: 12),
+      hintStyle: GoogleFonts.nunito(color: AppTheme.textSecondary.withOpacity(0.5)),
       prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: AppTheme.textSecondary) : null,
       suffixIcon: suffixIcon,
       suffixText: suffixText,
+      suffixStyle: GoogleFonts.nunito(color: AppTheme.textSecondary, fontWeight: FontWeight.bold),
       filled: true,
-      fillColor: const Color(0xFF1A1A2E),
+      fillColor: const Color(0xFF1A1200).withOpacity(0.5),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: const Color(0xFF94A3B8).withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: AppTheme.textSecondary.withOpacity(0.1)),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: const Color(0xFF94A3B8).withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: AppTheme.textSecondary.withOpacity(0.1)),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppTheme.primary),
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFFFF8C42), width: 1.5),
+      ),
+      errorMaxLines: 3,
+    );
+  }
+
+  Widget _buildBackground() {
+    return Stack(
+      children: [
+        Container(color: const Color(0xFF1A1200)),
+        Container(
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              colors: [const Color(0xFFFF8C42).withOpacity(0.08), Colors.transparent],
+              center: Alignment.center,
+              radius: 1.5,
+            ),
+          ),
+        ),
+        Positioned(top: -50, left: -100, child: _Circle(size: 300, color: const Color(0xFFFF8C42).withOpacity(0.06))),
+        Positioned(bottom: -50, right: -100, child: _Circle(size: 350, color: const Color(0xFFFF8C42).withOpacity(0.06))),
+        Positioned(top: 200, right: -50, child: _Circle(size: 200, color: const Color(0xFFFF8C42).withOpacity(0.06))),
+        Positioned(bottom: 150, left: -50, child: _Circle(size: 150, color: const Color(0xFFFFD166).withOpacity(0.04))),
+        Positioned(top: 100, left: 150, child: _Circle(size: 100, color: const Color(0xFFFFD166).withOpacity(0.04))),
+      ],
+    );
+  }
+
+  Widget _buildFloatingCard({required Widget child}) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: const Color(0xFFFF8C42).withOpacity(0.2), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFF8C42).withOpacity(0.15),
+            blurRadius: 40,
+            spreadRadius: -8,
+            offset: const Offset(0, 20),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: BackdropFilter(
+          filter: ui.ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            padding: const EdgeInsets.all(28),
+            color: const Color(0xFF3D2C00).withOpacity(0.92),
+            child: child,
+          ),
+        ),
       ),
     );
   }
@@ -151,115 +225,271 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            if (_currentStep > 0) {
-              setState(() => _currentStep--);
-            } else {
-              context.pop();
-            }
-          },
-        ),
-      ),
-      body: Column(
+      body: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-            child: _StepIndicator(currentStep: _currentStep),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: [
-                _buildStep1(),
-                _buildStep2(),
-                _buildStep3(),
-                _buildStep4(),
-              ][_currentStep],
+          _buildBackground(),
+          SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary),
+                        onPressed: () {
+                          if (_currentStep > 0) {
+                            setState(() => _currentStep--);
+                          } else {
+                            Navigator.pop(context);
+                          }
+                        },
+                      ),
+                      const Spacer(),
+                      Text(
+                        "PawPulse",
+                        style: GoogleFonts.outfit(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFFFF8C42),
+                        ),
+                      ),
+                      const Spacer(),
+                      const SizedBox(width: 48), // Balance the back button
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 28.0),
+                  child: _buildStepIndicator(),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: _buildFloatingCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildStepHeader(),
+                          const SizedBox(height: 24),
+                          [
+                            _buildStep1(),
+                            _buildStep2(),
+                            _buildStep3(),
+                            _buildStep4(),
+                          ][_currentStep],
+                          const SizedBox(height: 24),
+                          ValueListenableBuilder(
+                            valueListenable: _authProvider,
+                            builder: (context, authState, _) {
+                              return ValueListenableBuilder(
+                                valueListenable: _petProvider,
+                                builder: (context, petState, _) {
+                                  bool isLoading = authState.isLoading || petState.isLoading;
+                                  return Row(
+                                    children: [
+                                      if (_currentStep > 0)
+                                        Expanded(
+                                          flex: 1,
+                                          child: OutlinedButton(
+                                            onPressed: isLoading ? null : () => setState(() => _currentStep--),
+                                            style: OutlinedButton.styleFrom(
+                                              padding: const EdgeInsets.symmetric(vertical: 18.0),
+                                              side: BorderSide(color: AppTheme.textSecondary.withOpacity(0.3)),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                            ),
+                                            child: Text("Back", style: GoogleFonts.outfit(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
+                                          ),
+                                        ),
+                                      if (_currentStep > 0) const SizedBox(width: 12),
+                                      Expanded(
+                                        flex: 2,
+                                        child: GradientButton(
+                                          label: _currentStep < 3 ? "Next" : "Create Account",
+                                          isLoading: isLoading,
+                                          onPressed: _currentStep == 3 ? _submitRegistration : _nextStep,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }
+                              );
+                            }
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          _buildBottomNav(),
         ],
       ),
     );
   }
 
-  Widget _buildStep1() {
-    int pwdLen = _passwordCtrl.text.length;
-    String strLabel = pwdLen == 0 ? "" : (pwdLen < 6 ? "Weak" : (pwdLen < 10 ? "Medium" : "Strong"));
+  Widget _buildStepIndicator() {
+    return Row(
+      children: List.generate(7, (index) {
+        if (index % 2 == 0) {
+          int stepIndex = index ~/ 2;
+          bool isDone = stepIndex < _currentStep;
+          bool isActive = stepIndex == _currentStep;
+          
+          if (isDone) {
+            return Container(
+              width: 32,
+              height: 32,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color(0xFF06D6A0),
+              ),
+              child: const Center(
+                child: Icon(Icons.check, color: Colors.white, size: 16),
+              ),
+            );
+          } else if (isActive) {
+            return Container(
+              width: 32,
+              height: 32,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(colors: [Color(0xFFFF8C42), Color(0xFFFFD166)]),
+              ),
+              child: Center(
+                child: Text(
+                  "${stepIndex + 1}",
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ),
+            );
+          } else {
+            return Container(
+              width: 32,
+              height: 32,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color(0xFF261D15),
+              ),
+              child: Center(
+                child: Text(
+                  "${stepIndex + 1}",
+                  style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+                ),
+              ),
+            );
+          }
+        } else {
+          int lineIndex = index ~/ 2;
+          bool isPassed = lineIndex < _currentStep;
+          return Expanded(
+            child: Container(
+              height: 2,
+              color: isPassed ? const Color(0xFF06D6A0) : const Color(0xFF261D15),
+            ),
+          );
+        }
+      }),
+    );
+  }
 
+  Widget _buildStepHeader() {
+    String title = "";
+    String subtitle = "";
+    switch (_currentStep) {
+      case 0:
+        title = "Create Account";
+        subtitle = "Let's get you started";
+        break;
+      case 1:
+        title = "Your Pet's Profile";
+        subtitle = "Tell us about your furry friend";
+        break;
+      case 2:
+        title = "Health Baseline";
+        subtitle = "Help us understand your pet's health";
+        break;
+      case 3:
+        title = "All Done!";
+        subtitle = "Review your details before we begin";
+        break;
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          subtitle,
+          style: GoogleFonts.nunito(fontSize: 13, color: AppTheme.textSecondary),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStep1() {
     return Form(
       key: _formKey0,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 12),
-          Text("Account Setup", style: GoogleFonts.spaceGrotesk(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
-          const SizedBox(height: 24),
           TextFormField(
             controller: _nameCtrl,
-            decoration: _buildInputDecoration("Full Name", prefixIcon: Icons.person_outline),
-            validator: (v) => v!.isEmpty ? 'Required' : null,
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+            decoration: _buildInputDecoration("Full Name", prefixIcon: Icons.person_outline_rounded),
+            validator: Validators.validateFullName,
           ),
           const SizedBox(height: 16),
           TextFormField(
             controller: _emailCtrl,
             keyboardType: TextInputType.emailAddress,
-            decoration: _buildInputDecoration("Email", prefixIcon: Icons.email_outlined),
-            validator: (v) => !v!.contains('@') ? 'Valid email required' : null,
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+            decoration: _buildInputDecoration("Email Address", prefixIcon: Icons.email_outlined),
+            validator: Validators.validateEmail,
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _phoneCtrl,
+            keyboardType: TextInputType.phone,
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+            decoration: _buildInputDecoration("09XX XXX XXXX", prefixIcon: Icons.phone_outlined),
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(11),
+            ],
+            onChanged: (val) {
+              if (val.startsWith('63') && val.length <= 12) {
+                // simple trim check handle locally if needed
+              }
+            },
+            validator: Validators.validatePhoneNumber,
           ),
           const SizedBox(height: 16),
           TextFormField(
             controller: _passwordCtrl,
             obscureText: _obscurePassword,
-            decoration: _buildInputDecoration("Password", prefixIcon: Icons.lock_outlined, suffixIcon: IconButton(
-              icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off, color: AppTheme.textSecondary),
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+            decoration: _buildInputDecoration("Password", prefixIcon: Icons.lock_outline_rounded, suffixIcon: IconButton(
+              icon: Icon(_obscurePassword ? Icons.visibility_rounded : Icons.visibility_off_rounded, color: AppTheme.textSecondary),
               onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
             )),
             onChanged: (_) => setState(() {}),
-            validator: (v) => v!.length < 6 ? 'Min 6 characters' : null,
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(child: _buildStrengthBar(pwdLen >= 1, pwdLen)),
-              const SizedBox(width: 4),
-              Expanded(child: _buildStrengthBar(pwdLen >= 6, pwdLen)),
-              const SizedBox(width: 4),
-              Expanded(child: _buildStrengthBar(pwdLen >= 10, pwdLen)),
-              const SizedBox(width: 12),
-              Text(strLabel, style: TextStyle(color: AppTheme.textSecondary, fontSize: 12), textAlign: TextAlign.right),
-            ],
+            validator: Validators.validatePassword,
           ),
           const SizedBox(height: 16),
           TextFormField(
             controller: _confirmCtrl,
             obscureText: _obscurePassword,
-            decoration: _buildInputDecoration("Confirm Password", prefixIcon: Icons.lock_outlined),
-            validator: (v) => v != _passwordCtrl.text ? 'Passwords do not match' : null,
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+            decoration: _buildInputDecoration("Confirm Password", prefixIcon: Icons.lock_outline_rounded),
+            validator: (v) => Validators.validateConfirmPassword(v, _passwordCtrl.text),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildStrengthBar(bool isActive, int pwdLen) {
-    Color c = AppTheme.textSecondary;
-    if (isActive) {
-      if (pwdLen < 6) c = AppTheme.error;
-      else if (pwdLen < 10) c = const Color(0xFFFFB347);
-      else c = AppTheme.accent;
-    }
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      height: 4,
-      decoration: BoxDecoration(
-        color: c,
-        borderRadius: BorderRadius.circular(2),
       ),
     );
   }
@@ -270,19 +500,18 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 12),
-          Text("Pet Profile", style: GoogleFonts.spaceGrotesk(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
-          const SizedBox(height: 24),
           TextFormField(
             controller: _petNameCtrl,
-            decoration: _buildInputDecoration("Pet Name", prefixIcon: Icons.pets),
-            validator: (v) => v!.isEmpty ? 'Required' : null,
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+            decoration: _buildInputDecoration("Pet Name", prefixIcon: Icons.pets_rounded),
+            validator: Validators.validatePetName,
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
             value: _speciesValue,
             decoration: _buildInputDecoration("Species"),
-            dropdownColor: AppTheme.surface,
+            dropdownColor: const Color(0xFF1A1200),
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
             items: const [
               DropdownMenuItem(value: 'Dog 🐕', child: Text('Dog 🐕')),
               DropdownMenuItem(value: 'Cat 🐈', child: Text('Cat 🐈')),
@@ -291,23 +520,26 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               DropdownMenuItem(value: 'Other 🐾', child: Text('Other 🐾')),
             ],
             onChanged: (v) => setState(() => _speciesValue = v),
-            validator: (v) => v == null ? 'Required' : null,
+            validator: (v) => v == null ? 'Please select a species' : null,
           ),
           const SizedBox(height: 16),
           TextFormField(
             controller: _breedCtrl,
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
             decoration: _buildInputDecoration("Breed"),
-            validator: (v) => v!.isEmpty ? 'Required' : null,
+            validator: Validators.validateBreed,
           ),
           const SizedBox(height: 16),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: TextFormField(
                   controller: _ageCtrl,
                   keyboardType: TextInputType.number,
+                  style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
                   decoration: _buildInputDecoration("Age", suffixText: "yrs"),
-                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                  validator: Validators.validateAge,
                 ),
               ),
               const SizedBox(width: 16),
@@ -315,8 +547,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 child: TextFormField(
                   controller: _weightCtrl,
                   keyboardType: TextInputType.number,
+                  style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
                   decoration: _buildInputDecoration("Weight", suffixText: "kg"),
-                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                  validator: Validators.validateWeight,
                 ),
               ),
             ],
@@ -332,27 +565,28 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 12),
-          Text("Health Baseline", style: GoogleFonts.spaceGrotesk(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
-          const SizedBox(height: 8),
-          Text("Optional but recommended for accurate scanning.", style: GoogleFonts.inter(fontSize: 16, color: AppTheme.textSecondary)),
-          const SizedBox(height: 24),
           TextFormField(
             controller: _conditionsCtrl,
             maxLines: 3,
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
             decoration: _buildInputDecoration("Known Conditions", helperText: "e.g. diabetes, hip dysplasia"),
+            validator: Validators.validateNotes,
           ),
           const SizedBox(height: 16),
           TextFormField(
             controller: _allergiesCtrl,
             maxLines: 3,
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
             decoration: _buildInputDecoration("Allergies", helperText: "e.g. pollen, certain foods"),
+            validator: Validators.validateNotes,
           ),
           const SizedBox(height: 16),
           TextFormField(
             controller: _medicationsCtrl,
             maxLines: 3,
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
             decoration: _buildInputDecoration("Current Medications", helperText: "e.g. flea treatment, supplements"),
+            validator: Validators.validateNotes,
           ),
         ],
       ),
@@ -365,35 +599,34 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 12),
-          Text("Confirmation", style: GoogleFonts.spaceGrotesk(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
-          const SizedBox(height: 24),
-          Card(
-            color: AppTheme.surface,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            margin: EdgeInsets.zero,
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                children: [
-                  _InfoRow(label: "Name", value: _nameCtrl.text),
-                  const Divider(),
-                  _InfoRow(label: "Email", value: _emailCtrl.text),
-                  const Divider(),
-                  _InfoRow(label: "Pet Name", value: _petNameCtrl.text),
-                  const Divider(),
-                  _InfoRow(label: "Species", value: _speciesValue ?? "-"),
-                  const Divider(),
-                  _InfoRow(label: "Breed", value: _breedCtrl.text),
-                  const Divider(),
-                  _InfoRow(label: "Age", value: "${_ageCtrl.text} yrs"),
-                  const Divider(),
-                  _InfoRow(label: "Weight", value: "${_weightCtrl.text} kg"),
-                ],
-              ),
+          Container(
+            padding: const EdgeInsets.all(20.0),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A1200).withOpacity(0.5),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppTheme.textSecondary.withOpacity(0.1)),
+            ),
+            child: Column(
+              children: [
+                _InfoRow(label: "Name", value: _nameCtrl.text),
+                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withOpacity(0.1))),
+                _InfoRow(label: "Email", value: _emailCtrl.text),
+                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withOpacity(0.1))),
+                _InfoRow(label: "Phone", value: _phoneCtrl.text),
+                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withOpacity(0.1))),
+                _InfoRow(label: "Pet Name", value: _petNameCtrl.text),
+                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withOpacity(0.1))),
+                _InfoRow(label: "Species", value: _speciesValue ?? "-"),
+                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withOpacity(0.1))),
+                _InfoRow(label: "Breed", value: _breedCtrl.text),
+                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withOpacity(0.1))),
+                _InfoRow(label: "Age", value: "${_ageCtrl.text} yrs"),
+                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withOpacity(0.1))),
+                _InfoRow(label: "Weight", value: "${_weightCtrl.text} kg"),
+              ],
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 24),
           ValueListenableBuilder(
             valueListenable: _authProvider,
             builder: (context, authState, child) {
@@ -411,47 +644,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       ),
     );
   }
-
-  Widget _buildBottomNav() {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: ValueListenableBuilder(
-        valueListenable: _authProvider,
-        builder: (context, authState, _) {
-          return ValueListenableBuilder(
-             valueListenable: _petProvider,
-             builder: (context, petState, _) {
-               bool isLoading = authState.isLoading || petState.isLoading;
-               return Row(
-                 children: [
-                   if (_currentStep > 0)
-                     Expanded(
-                       flex: 1,
-                       child: OutlinedButton(
-                         onPressed: isLoading ? null : () => setState(() => _currentStep--),
-                         child: const Padding(
-                           padding: EdgeInsets.symmetric(vertical: 16.0),
-                           child: Text("Back"),
-                         ),
-                       ),
-                     ),
-                   if (_currentStep > 0) const SizedBox(width: 16),
-                   Expanded(
-                     flex: 2,
-                     child: GradientButton(
-                       label: _currentStep == 3 ? "Create Account" : "Next",
-                       isLoading: isLoading,
-                       onPressed: _currentStep == 3 ? _submitRegistration : _nextStep,
-                     ),
-                   ),
-                 ],
-               );
-             }
-          );
-        }
-      ),
-    );
-  }
 }
 
 class _InfoRow extends StatelessWidget {
@@ -461,58 +653,31 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 15)),
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: GoogleFonts.nunito(color: AppTheme.textSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
+        Text(value, style: GoogleFonts.outfit(color: AppTheme.textPrimary, fontSize: 14, fontWeight: FontWeight.w700)),
+      ],
     );
   }
 }
 
-class _StepIndicator extends StatelessWidget {
-  final int currentStep;
-  const _StepIndicator({required this.currentStep});
+class _Circle extends StatelessWidget {
+  final double size;
+  final Color color;
+
+  const _Circle({required this.size, required this.color});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: List.generate(7, (index) {
-        if (index % 2 == 0) {
-          int stepIndex = index ~/ 2;
-          bool isDone = stepIndex < currentStep;
-          bool isActive = stepIndex == currentStep;
-          
-          return AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isDone ? AppTheme.accent : (isActive ? AppTheme.primary : AppTheme.surface),
-            ),
-            child: Center(
-              child: isDone
-                  ? const Icon(Icons.check, color: Colors.white, size: 16)
-                  : Text("${stepIndex + 1}", style: TextStyle(color: isActive ? Colors.white : AppTheme.textSecondary, fontWeight: FontWeight.bold)),
-            ),
-          );
-        } else {
-          int lineIndex = index ~/ 2;
-          bool isPassed = lineIndex < currentStep;
-          return Expanded(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              height: 2,
-              color: isPassed ? AppTheme.accent : AppTheme.surface,
-            ),
-          );
-        }
-      }),
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+      ),
     );
   }
 }

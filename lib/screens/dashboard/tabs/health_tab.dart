@@ -17,18 +17,16 @@ class HealthTab extends StatefulWidget {
   State<HealthTab> createState() => _HealthTabState();
 }
 
-class _HealthTabState extends State<HealthTab> with SingleTickerProviderStateMixin {
+class _HealthTabState extends State<HealthTab> {
   late final HealthRecordProvider _healthRecordProvider;
   late final PetProvider _petProvider;
   late final HealthRecordService _healthRecordService;
-  late TabController _tabController;
-
   String? _selectedPetId;
+  String _filter = "All";
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
     _healthRecordService = HealthRecordService();
     _healthRecordProvider = HealthRecordProvider(_healthRecordService);
     _petProvider = PetProvider(PetService());
@@ -56,7 +54,6 @@ class _HealthTabState extends State<HealthTab> with SingleTickerProviderStateMix
     _petProvider.removeListener(_onPetsLoaded);
     _healthRecordProvider.dispose();
     _petProvider.dispose();
-    _tabController.dispose();
     super.dispose();
   }
 
@@ -66,20 +63,24 @@ class _HealthTabState extends State<HealthTab> with SingleTickerProviderStateMix
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.health_and_safety_outlined, size: 64, color: AppTheme.textSecondary.withOpacity(0.4)),
-            const SizedBox(height: 16),
-            Text("No records found", style: GoogleFonts.spaceGrotesk(fontSize: 18, color: Colors.white)),
+            Icon(Icons.health_and_safety_rounded, size: 80, color: AppTheme.textSecondary.withOpacity(0.2)),
+            const SizedBox(height: 24),
+            Text("No records found", style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
             const SizedBox(height: 8),
-            Text("Add a record using the + button", style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary)),
+            Text("Add a record using the + button", style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
           ],
         ),
       );
     }
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       itemCount: list.length,
       itemBuilder: (context, index) {
-        return HealthRecordCard(record: list[index]);
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16.0),
+          child: HealthRecordCard(record: list[index]),
+        );
       },
     );
   }
@@ -87,7 +88,25 @@ class _HealthTabState extends State<HealthTab> with SingleTickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppTheme.background,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          if (_selectedPetId == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Please add a pet first", style: GoogleFonts.nunito(fontWeight: FontWeight.bold)),
+                backgroundColor: AppTheme.primary,
+              ),
+            );
+            return;
+          }
+          AddHealthRecordBottomSheet.show(context, _healthRecordService, _selectedPetId!);
+        },
+        backgroundColor: AppTheme.primary,
+        elevation: 8,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: const Icon(Icons.add_rounded, color: AppTheme.background, size: 28),
+      ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -97,45 +116,33 @@ class _HealthTabState extends State<HealthTab> with SingleTickerProviderStateMix
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Text(
                 "Health Records",
-                style: GoogleFonts.spaceGrotesk(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                style: GoogleFonts.outfit(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
+                  color: AppTheme.textPrimary,
                 ),
               ),
             ),
             
-            // ── Tab Selector ──
+            // ── Filter Chips ──
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppTheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: TabBar(
-                  controller: _tabController,
-                  isScrollable: true,
-                  tabAlignment: TabAlignment.start,
-                  labelColor: Colors.white,
-                  unselectedLabelColor: AppTheme.textSecondary,
-                  indicator: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: AppTheme.primary.withOpacity(0.2),
-                  ),
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  dividerColor: Colors.transparent,
-                  tabs: const [
-                    Tab(text: "All"),
-                    Tab(text: "Vaccinations"),
-                    Tab(text: "Check-ups"),
-                    Tab(text: "Medications"),
-                  ],
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: ["All", "Vaccinations", "Check-ups", "Medications"].map((label) {
+                    return _FilterChip(
+                      label: label,
+                      isActive: _filter == label,
+                      onTap: () => setState(() => _filter = label),
+                    );
+                  }).toList(),
                 ),
               ),
             ),
             
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             
             // ── Tab Views ──
             Expanded(
@@ -147,34 +154,55 @@ class _HealthTabState extends State<HealthTab> with SingleTickerProviderStateMix
                   }
 
                   final List<HealthRecordModel> allRecords = state.records;
+                  final filtered = _filter == "All"
+                      ? allRecords
+                      : allRecords.where((r) => r.type.toLowerCase().contains(_filter.toLowerCase().replaceAll('s', ''))).toList();
 
-                  return TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildRecordList(allRecords),
-                      _buildRecordList(allRecords.where((r) => r.type.toLowerCase().contains("vaccination")).toList()),
-                      _buildRecordList(allRecords.where((r) => r.type.toLowerCase().contains("check")).toList()),
-                      _buildRecordList(allRecords.where((r) => r.type.toLowerCase().contains("medication")).toList()),
-                    ],
-                  );
+                  return _buildRecordList(filtered);
                 },
               ),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (_selectedPetId == null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Please add a pet first")),
-            );
-            return;
-          }
-          AddHealthRecordBottomSheet.show(context, _healthRecordService, _selectedPetId!);
-        },
-        backgroundColor: AppTheme.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+    );
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _FilterChip({
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        decoration: BoxDecoration(
+          color: isActive ? AppTheme.primary.withOpacity(0.15) : AppTheme.surface,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: isActive ? AppTheme.primary : AppTheme.textSecondary.withOpacity(0.1),
+            width: isActive ? 2 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.nunito(
+            fontSize: 14,
+            fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
+            color: isActive ? AppTheme.primary : AppTheme.textSecondary,
+          ),
+        ),
       ),
     );
   }

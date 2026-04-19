@@ -23,17 +23,17 @@ class _HealthRecordCardState extends State<HealthRecordCard> {
 
     final t = widget.record.type.toLowerCase();
     if (t.contains('vaccination')) {
-      typeColor = const Color(0xFF00D4AA); // accent
-      typeIcon = Icons.vaccines;
+      typeColor = AppTheme.accent;
+      typeIcon = Icons.vaccines_rounded;
     } else if (t.contains('check')) {
-      typeColor = const Color(0xFF6C63FF); // primary
-      typeIcon = Icons.medical_services;
+      typeColor = AppTheme.primary;
+      typeIcon = Icons.medical_services_rounded;
     } else if (t.contains('medication')) {
-      typeColor = const Color(0xFFFFB347);
-      typeIcon = Icons.medication;
+      typeColor = AppTheme.secondary;
+      typeIcon = Icons.medication_rounded;
     } else {
       typeColor = AppTheme.textSecondary;
-      typeIcon = Icons.health_and_safety;
+      typeIcon = Icons.health_and_safety_rounded;
     }
 
     final dateStr = widget.record.date != null 
@@ -43,100 +43,111 @@ class _HealthRecordCardState extends State<HealthRecordCard> {
     return GestureDetector(
       onTap: () => setState(() => _expanded = !_expanded),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
+        margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: AppTheme.card,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.08)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 4,
-              height: _expanded ? 120 : 64, // Approximate scaling for visual
-              decoration: BoxDecoration(
-                color: typeColor,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  bottomLeft: Radius.circular(16),
-                ),
-              ),
+          borderRadius: AppTheme.cardRadius,
+          border: Border.all(color: AppTheme.textSecondary.withOpacity(0.05)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(14.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: AppTheme.cardRadius,
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  width: 6,
+                  color: typeColor,
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: typeColor.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(typeIcon, size: 18, color: typeColor),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: typeColor.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(typeIcon, size: 22, color: typeColor),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    widget.record.type,
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppTheme.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    widget.record.vetName.isNotEmpty ? "Dr. ${widget.record.vetName}" : "Unknown Vet",
+                                    style: GoogleFonts.nunito(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              dateStr,
+                              style: GoogleFonts.nunito(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        AnimatedCrossFade(
+                          firstChild: const SizedBox.shrink(),
+                          secondChild: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
+                              const SizedBox(height: 16),
+                              Divider(color: AppTheme.textSecondary.withOpacity(0.1)),
+                              const SizedBox(height: 12),
+                              Text("Notes", style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
+                              const SizedBox(height: 6),
                               Text(
-                                widget.record.type,
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
+                                widget.record.notes.isEmpty ? "No additional notes." : widget.record.notes,
+                                style: GoogleFonts.nunito(fontSize: 14, fontWeight: FontWeight.w500, color: AppTheme.textPrimary, height: 1.5),
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                widget.record.vetName.isNotEmpty ? widget.record.vetName : "Unknown Vet",
-                                style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  color: AppTheme.textSecondary,
-                                ),
-                              ),
+                              const SizedBox(height: 4),
                             ],
                           ),
-                        ),
-                        Text(
-                          dateStr,
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            color: AppTheme.textSecondary,
-                          ),
+                          crossFadeState: _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                          duration: const Duration(milliseconds: 300),
+                          firstCurve: Curves.easeOutCubic,
+                          secondCurve: Curves.easeOutCubic,
                         ),
                       ],
                     ),
-                    AnimatedCrossFade(
-                      firstChild: const SizedBox.shrink(),
-                      secondChild: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const SizedBox(height: 10),
-                          Divider(color: Colors.white.withOpacity(0.05)),
-                          const SizedBox(height: 8),
-                          Text("Notes", style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary)),
-                          const SizedBox(height: 4),
-                          Text(
-                            widget.record.notes.isEmpty ? "No notes recorded." : widget.record.notes,
-                            style: GoogleFonts.inter(fontSize: 13, color: Colors.white),
-                          ),
-                        ],
-                      ),
-                      crossFadeState: _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-                      duration: const Duration(milliseconds: 250),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
