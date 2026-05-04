@@ -76,6 +76,7 @@ class PetProvider extends ValueNotifier<PetState> {
       value = value.copyWith(isLoading: false, error: (result as Failure).error.toString());
     } else {
       value = value.copyWith(isLoading: false);
+      loadPets(pet.ownerId);
     }
   }
 

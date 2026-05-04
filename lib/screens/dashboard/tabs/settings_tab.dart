@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -40,10 +41,17 @@ class _SettingsTabState extends State<SettingsTab> {
     _authProvider = AuthProvider(AuthService());
     _userService = UserService();
     _loadProfile();
+    _authProvider.addListener(_onAuthChanged);
+  }
+
+  void _onAuthChanged() {
+    if (_authProvider.value.currentUser != null && nameController.text.isEmpty) {
+      _loadProfile();
+    }
   }
 
   Future<void> _loadProfile() async {
-    final authUser = firebase_auth.FirebaseAuth.instance.currentUser;
+    final authUser = _authProvider.value.currentUser;
     if (authUser != null) {
       emailController.text = authUser.email ?? '';
       nameController.text = authUser.displayName ?? '';
@@ -61,6 +69,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
   @override
   void dispose() {
+    _authProvider.removeListener(_onAuthChanged);
     nameController.dispose();
     emailController.dispose();
     phoneController.dispose();
@@ -79,7 +88,7 @@ class _SettingsTabState extends State<SettingsTab> {
   }
 
   Future<void> _saveProfile() async {
-    final authUser = firebase_auth.FirebaseAuth.instance.currentUser;
+    final authUser = _authProvider.value.currentUser;
     if (authUser == null) return;
 
     setState(() => _isSaving = true);
@@ -102,7 +111,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
     setState(() => _isSaving = false);
 
-    if (!context.mounted) return;
+    if (!mounted) return;
     if (result is Success<void, AppException>) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Profile updated!", style: GoogleFonts.nunito(fontWeight: FontWeight.bold)), backgroundColor: AppTheme.success),
@@ -120,7 +129,7 @@ class _SettingsTabState extends State<SettingsTab> {
   void _handleResetPassword() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: AppTheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text("Reset Password", style: GoogleFonts.outfit(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
@@ -130,7 +139,7 @@ class _SettingsTabState extends State<SettingsTab> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: Text("Cancel", style: GoogleFonts.nunito(color: AppTheme.textSecondary, fontWeight: FontWeight.bold)),
           ),
           FilledButton(
@@ -139,9 +148,9 @@ class _SettingsTabState extends State<SettingsTab> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
             onPressed: () async {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               await _authProvider.resetPassword(emailController.text);
-              if (!context.mounted) return;
+              if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text("Reset link sent!", style: GoogleFonts.nunito(fontWeight: FontWeight.bold)), backgroundColor: AppTheme.success),
               );
@@ -154,45 +163,90 @@ class _SettingsTabState extends State<SettingsTab> {
   }
 
   void _handleDeleteAccount() {
+    int countdown = 10;
+    bool canDelete = false;
+    Timer? deleteTimer;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            const Icon(Icons.warning_amber_rounded, color: AppTheme.error),
-            const SizedBox(width: 12),
-            Text("Delete Account", style: GoogleFonts.outfit(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
-          ],
-        ),
-        content: Text(
-          "This will permanently delete your PawPulse account and all pet data. This action cannot be undone.",
-          style: GoogleFonts.nunito(color: AppTheme.textSecondary, fontWeight: FontWeight.w600),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Cancel", style: GoogleFonts.nunito(color: AppTheme.textSecondary, fontWeight: FontWeight.bold)),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              try {
-                await firebase_auth.FirebaseAuth.instance.currentUser?.delete();
-                await _authProvider.logout();
-              } catch (e) {
-                if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Failed to delete account.", style: GoogleFonts.nunito(fontWeight: FontWeight.bold)), backgroundColor: AppTheme.error),
-                );
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            deleteTimer ??= Timer.periodic(const Duration(seconds: 1), (timer) {
+              if (countdown > 0) {
+                setState(() => countdown--);
+              } else {
+                setState(() => canDelete = true);
+                timer.cancel();
               }
-            },
-            child: Text("Delete", style: GoogleFonts.nunito(color: AppTheme.error, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
+            });
+
+            return AlertDialog(
+              backgroundColor: AppTheme.surface,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Row(
+                children: [
+                  const Icon(Icons.warning_amber_rounded, color: AppTheme.error),
+                  const SizedBox(width: 12),
+                  Text("Delete Account", style: GoogleFonts.outfit(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "This will permanently delete your PawPulse account and all pet data. This action cannot be undone.",
+                    style: GoogleFonts.nunito(color: AppTheme.textSecondary, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    canDelete ? "You can now confirm deletion" : "You can confirm deletion in ${countdown}s",
+                    style: GoogleFonts.nunito(
+                      fontSize: 13,
+                      color: canDelete ? AppTheme.error : AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    deleteTimer?.cancel();
+                    Navigator.pop(dialogContext);
+                  },
+                  child: Text("Cancel", style: GoogleFonts.nunito(color: AppTheme.textSecondary, fontWeight: FontWeight.bold)),
+                ),
+                TextButton(
+                  onPressed: canDelete ? () async {
+                    deleteTimer?.cancel();
+                    Navigator.pop(dialogContext);
+                    try {
+                      await firebase_auth.FirebaseAuth.instance.currentUser?.delete();
+                      await _authProvider.logout();
+                    } catch (e) {
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Failed to delete account.", style: GoogleFonts.nunito(fontWeight: FontWeight.bold)), backgroundColor: AppTheme.error),
+                      );
+                    }
+                  } : null,
+                  child: Text(
+                    canDelete ? "Delete" : "Delete (${countdown}s)",
+                    style: GoogleFonts.nunito(
+                      color: canDelete ? AppTheme.error : AppTheme.textSecondary.withValues(alpha: 0.5),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ).then((_) {
+      deleteTimer?.cancel();
+    });
   }
 
   void _handleSignOut() {
@@ -220,11 +274,11 @@ class _SettingsTabState extends State<SettingsTab> {
               Navigator.pop(dialogContext);
               try {
                 await _authProvider.logout();
-                if (!context.mounted) return;
+                if (!mounted) return;
                 setState(() {});
                 context.go('/login');
               } catch (e) {
-                if (!context.mounted) return;
+                if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(e.toString(), style: GoogleFonts.nunito(fontWeight: FontWeight.bold)),
@@ -258,7 +312,7 @@ class _SettingsTabState extends State<SettingsTab> {
   Widget _divider() {
     return Divider(
       height: 1,
-      color: AppTheme.textSecondary.withOpacity(0.1),
+      color: AppTheme.textSecondary.withValues(alpha: 0.1),
       indent: 16,
       endIndent: 16,
     );
@@ -305,7 +359,7 @@ class _SettingsTabState extends State<SettingsTab> {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: AppTheme.primary.withOpacity(0.15),
+          color: AppTheme.primary.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(icon, size: 20, color: AppTheme.primary),
@@ -317,9 +371,9 @@ class _SettingsTabState extends State<SettingsTab> {
       trailing: Switch(
         value: value,
         onChanged: onChanged,
-        activeTrackColor: AppTheme.primary.withOpacity(0.5),
-        activeColor: AppTheme.primary,
-        inactiveTrackColor: AppTheme.textSecondary.withOpacity(0.2),
+        activeTrackColor: AppTheme.primary.withValues(alpha: 0.5),
+        activeThumbColor: AppTheme.primary,
+        inactiveTrackColor: AppTheme.textSecondary.withValues(alpha: 0.2),
         inactiveThumbColor: AppTheme.textSecondary,
       ),
     );
@@ -339,7 +393,7 @@ class _SettingsTabState extends State<SettingsTab> {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: iconColor.withOpacity(0.15),
+          color: iconColor.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(icon, size: 20, color: iconColor),
@@ -389,7 +443,7 @@ class _SettingsTabState extends State<SettingsTab> {
                   children: [
                     CircleAvatar(
                       radius: 48,
-                      backgroundColor: AppTheme.primary.withOpacity(0.15),
+                      backgroundColor: AppTheme.primary.withValues(alpha: 0.15),
                       child: Text(
                         _getInitials(
                           nameController.text.isNotEmpty
@@ -440,7 +494,7 @@ class _SettingsTabState extends State<SettingsTab> {
                 decoration: BoxDecoration(
                   color: AppTheme.surface,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppTheme.textSecondary.withOpacity(0.05)),
+                  border: Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.05)),
                   boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
                 ),
                 child: Column(
@@ -490,7 +544,7 @@ class _SettingsTabState extends State<SettingsTab> {
                 decoration: BoxDecoration(
                   color: AppTheme.surface,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppTheme.textSecondary.withOpacity(0.05)),
+                  border: Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.05)),
                   boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
                 ),
                 child: Column(
@@ -528,7 +582,7 @@ class _SettingsTabState extends State<SettingsTab> {
                 decoration: BoxDecoration(
                   color: AppTheme.surface,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppTheme.textSecondary.withOpacity(0.05)),
+                  border: Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.05)),
                   boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
                 ),
                 child: Column(
@@ -561,11 +615,83 @@ class _SettingsTabState extends State<SettingsTab> {
                 decoration: BoxDecoration(
                   color: AppTheme.surface,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppTheme.textSecondary.withOpacity(0.05)),
+                  border: Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.05)),
                   boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
                 ),
                 child: Column(
                   children: [
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      leading: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: AppTheme.accent.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.medical_services_outlined,
+                          size: 18,
+                          color: AppTheme.accent,
+                        ),
+                      ),
+                      title: Text(
+                        "Our Services",
+                        style: GoogleFonts.nunito(
+                          fontSize: 14,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      subtitle: Text(
+                        "View clinic services offered",
+                        style: GoogleFonts.nunito(
+                          fontSize: 12,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                      trailing: const Icon(
+                        Icons.chevron_right,
+                        color: AppTheme.textSecondary,
+                      ),
+                      onTap: () => context.push('/about'),
+                    ),
+                    _divider(),
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      leading: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.info_outline,
+                          size: 18,
+                          color: AppTheme.primary,
+                        ),
+                      ),
+                      title: Text(
+                        "About PawPulse",
+                        style: GoogleFonts.nunito(
+                          fontSize: 14,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      subtitle: Text(
+                        "App info, team, and institution",
+                        style: GoogleFonts.nunito(
+                          fontSize: 12,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                      trailing: const Icon(
+                        Icons.chevron_right,
+                        color: AppTheme.textSecondary,
+                      ),
+                      onTap: () => context.push('/about'),
+                    ),
+                    _divider(),
                     _actionTile(
                       icon: Icons.logout_rounded,
                       iconColor: AppTheme.secondary,
@@ -580,7 +706,7 @@ class _SettingsTabState extends State<SettingsTab> {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: AppTheme.textSecondary.withOpacity(0.1),
+                          color: AppTheme.textSecondary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(

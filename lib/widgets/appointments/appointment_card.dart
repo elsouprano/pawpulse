@@ -31,10 +31,10 @@ class AppointmentCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.card,
         borderRadius: AppTheme.cardRadius,
-        border: Border.all(color: AppTheme.textSecondary.withOpacity(0.05)),
+        border: Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.05)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
+            color: Colors.black.withValues(alpha: 0.12),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -48,9 +48,9 @@ class AppointmentCard extends StatelessWidget {
             width: 52,
             height: 56,
             decoration: BoxDecoration(
-              color: AppTheme.primary.withOpacity(0.15),
+              color: AppTheme.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.primary.withOpacity(0.3)),
+              border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -176,16 +176,19 @@ class _StatusChip extends StatelessWidget {
 
     final lowerStatus = status.toLowerCase();
     if (lowerStatus.contains('confirmed')) {
-      bgColor = AppTheme.success.withOpacity(0.15);
+      bgColor = AppTheme.success.withValues(alpha: 0.15);
       textColor = AppTheme.success;
     } else if (lowerStatus.contains('pending')) {
-      bgColor = AppTheme.secondary.withOpacity(0.15);
+      bgColor = AppTheme.secondary.withValues(alpha: 0.15);
       textColor = AppTheme.secondary;
     } else if (lowerStatus.contains('cancel')) {
-      bgColor = AppTheme.error.withOpacity(0.15);
+      bgColor = AppTheme.error.withValues(alpha: 0.15);
       textColor = AppTheme.error;
+    } else if (lowerStatus.contains('completed')) {
+      bgColor = const Color(0xFF4C9BE8).withValues(alpha: 0.15);
+      textColor = const Color(0xFF4C9BE8);
     } else {
-      bgColor = AppTheme.textSecondary.withOpacity(0.15);
+      bgColor = AppTheme.textSecondary.withValues(alpha: 0.15);
       textColor = AppTheme.textSecondary;
     }
 

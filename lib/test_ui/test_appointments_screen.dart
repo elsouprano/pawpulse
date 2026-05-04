@@ -11,7 +11,7 @@ import '../providers/appointment_provider.dart';
 import '../services/appointment_service.dart';
 
 class TestAppointmentsScreen extends StatefulWidget {
-  const TestAppointmentsScreen({Key? key}) : super(key: key);
+  const TestAppointmentsScreen({super.key});
 
   @override
   State<TestAppointmentsScreen> createState() => _TestAppointmentsScreenState();
@@ -160,7 +160,7 @@ class _TestAppointmentsScreenState extends State<TestAppointmentsScreen> {
                         isThreeLine: true,
                         onTap: () => setState(() => _selectedAppointment = appt),
                         selected: _selectedAppointment?.id == appt.id,
-                        selectedTileColor: Colors.blue.withOpacity(0.1),
+                        selectedTileColor: Colors.blue.withValues(alpha: 0.1),
                       ),
                     );
                   },

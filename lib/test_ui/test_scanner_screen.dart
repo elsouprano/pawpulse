@@ -11,7 +11,7 @@ import '../providers/scanner_provider.dart';
 import '../services/scanner_service.dart';
 
 class TestScannerScreen extends StatefulWidget {
-  const TestScannerScreen({Key? key}) : super(key: key);
+  const TestScannerScreen({super.key});
 
   @override
   State<TestScannerScreen> createState() => _TestScannerScreenState();

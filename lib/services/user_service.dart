@@ -41,6 +41,19 @@ class UserService {
     }
   }
 
+  Future<Result<String, AppException>> getRoleByUid(String uid) async {
+    try {
+      final doc = await _firestore.collection(FirebaseConstants.usersCollection).doc(uid).get();
+      if (doc.exists) {
+        final data = doc.data();
+        return Success(data?['role'] as String? ?? 'user');
+      }
+      return const Success('user');
+    } catch (e) {
+      return Failure(GeneralException('Failed to fetch user role: $e'));
+    }
+  }
+
   Future<Result<void, AppException>> updateUserProfile(UserModel user) async {
     try {
       await _firestore

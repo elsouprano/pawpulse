@@ -63,7 +63,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 20,
                 offset: const Offset(0, -5),
               ),
@@ -73,7 +73,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             selectedIndex: _currentIndex,
             onDestinationSelected: switchTab,
             backgroundColor: AppTheme.surface,
-            indicatorColor: AppTheme.primary.withOpacity(0.15),
+            indicatorColor: AppTheme.primary.withValues(alpha: 0.15),
             labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
             destinations: const [
               NavigationDestination(

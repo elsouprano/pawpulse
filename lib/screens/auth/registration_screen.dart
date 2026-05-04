@@ -129,16 +129,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         breed: _breedCtrl.text.trim(),
         age: int.tryParse(_ageCtrl.text) ?? 0,
         weight: double.tryParse(_weightCtrl.text) ?? 0.0,
-        conditions: _conditionsCtrl.text.isNotEmpty ? _conditionsCtrl.text.split(',').map((e) => e.trim()).toList() : [],
-        allergies: _allergiesCtrl.text.isNotEmpty ? _allergiesCtrl.text.split(',').map((e) => e.trim()).toList() : [],
-        medications: _medicationsCtrl.text.isNotEmpty ? _medicationsCtrl.text.split(',').map((e) => e.trim()).toList() : [],
+        conditions: _conditionsCtrl.text.trim().isNotEmpty ? _conditionsCtrl.text.split(',').map((e) => e.trim()).toList() : ['None'],
+        allergies: _allergiesCtrl.text.trim().isNotEmpty ? _allergiesCtrl.text.split(',').map((e) => e.trim()).toList() : ['None'],
+        medications: _medicationsCtrl.text.trim().isNotEmpty ? _medicationsCtrl.text.split(',').map((e) => e.trim()).toList() : ['None'],
         healthStatus: 'Baseline Set',
         createdAt: DateTime.now(),
       );
 
       await _petProvider.addPet(newPet);
-      if (_petProvider.value.error == null && mounted) {
-        context.go('/dashboard');
+      if (_petProvider.value.error == null) {
+        await _authProvider.refreshCurrentUser();
+        if (!mounted) return;
+        _petProvider.loadPets(user.uid);
+        context.go('/registration-success');
       }
     }
   }
@@ -147,21 +150,21 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     return InputDecoration(
       hintText: hint,
       helperText: helperText,
-      helperStyle: GoogleFonts.nunito(color: AppTheme.textSecondary.withOpacity(0.7), fontSize: 12),
-      hintStyle: GoogleFonts.nunito(color: AppTheme.textSecondary.withOpacity(0.5)),
+      helperStyle: GoogleFonts.nunito(color: AppTheme.textSecondary.withValues(alpha: 0.7), fontSize: 12),
+      hintStyle: GoogleFonts.nunito(color: AppTheme.textSecondary.withValues(alpha: 0.5)),
       prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: AppTheme.textSecondary) : null,
       suffixIcon: suffixIcon,
       suffixText: suffixText,
       suffixStyle: GoogleFonts.nunito(color: AppTheme.textSecondary, fontWeight: FontWeight.bold),
       filled: true,
-      fillColor: const Color(0xFF1A1200).withOpacity(0.5),
+      fillColor: const Color(0xFF1A1200).withValues(alpha: 0.5),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: AppTheme.textSecondary.withOpacity(0.1)),
+        borderSide: BorderSide(color: AppTheme.textSecondary.withValues(alpha: 0.1)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: AppTheme.textSecondary.withOpacity(0.1)),
+        borderSide: BorderSide(color: AppTheme.textSecondary.withValues(alpha: 0.1)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
@@ -178,17 +181,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         Container(
           decoration: BoxDecoration(
             gradient: RadialGradient(
-              colors: [const Color(0xFFFF8C42).withOpacity(0.08), Colors.transparent],
+              colors: [const Color(0xFFFF8C42).withValues(alpha: 0.08), Colors.transparent],
               center: Alignment.center,
               radius: 1.5,
             ),
           ),
         ),
-        Positioned(top: -50, left: -100, child: _Circle(size: 300, color: const Color(0xFFFF8C42).withOpacity(0.06))),
-        Positioned(bottom: -50, right: -100, child: _Circle(size: 350, color: const Color(0xFFFF8C42).withOpacity(0.06))),
-        Positioned(top: 200, right: -50, child: _Circle(size: 200, color: const Color(0xFFFF8C42).withOpacity(0.06))),
-        Positioned(bottom: 150, left: -50, child: _Circle(size: 150, color: const Color(0xFFFFD166).withOpacity(0.04))),
-        Positioned(top: 100, left: 150, child: _Circle(size: 100, color: const Color(0xFFFFD166).withOpacity(0.04))),
+        Positioned(top: -50, left: -100, child: _Circle(size: 300, color: const Color(0xFFFF8C42).withValues(alpha: 0.06))),
+        Positioned(bottom: -50, right: -100, child: _Circle(size: 350, color: const Color(0xFFFF8C42).withValues(alpha: 0.06))),
+        Positioned(top: 200, right: -50, child: _Circle(size: 200, color: const Color(0xFFFF8C42).withValues(alpha: 0.06))),
+        Positioned(bottom: 150, left: -50, child: _Circle(size: 150, color: const Color(0xFFFFD166).withValues(alpha: 0.04))),
+        Positioned(top: 100, left: 150, child: _Circle(size: 100, color: const Color(0xFFFFD166).withValues(alpha: 0.04))),
       ],
     );
   }
@@ -198,10 +201,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: const Color(0xFFFF8C42).withOpacity(0.2), width: 1),
+        border: Border.all(color: const Color(0xFFFF8C42).withValues(alpha: 0.2), width: 1),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF8C42).withOpacity(0.15),
+            color: const Color(0xFFFF8C42).withValues(alpha: 0.15),
             blurRadius: 40,
             spreadRadius: -8,
             offset: const Offset(0, 20),
@@ -214,7 +217,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           filter: ui.ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
             padding: const EdgeInsets.all(28),
-            color: const Color(0xFF3D2C00).withOpacity(0.92),
+            color: const Color(0xFF3D2C00).withValues(alpha: 0.92),
             child: child,
           ),
         ),
@@ -224,11 +227,21 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          _buildBackground(),
-          SafeArea(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (_currentStep > 0) {
+          setState(() => _currentStep--);
+        } else {
+          context.go('/login');
+        }
+      },
+      child: Scaffold(
+        body: Stack(
+          children: [
+            _buildBackground(),
+            SafeArea(
             child: Column(
               children: [
                 Padding(
@@ -241,7 +254,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           if (_currentStep > 0) {
                             setState(() => _currentStep--);
                           } else {
-                            Navigator.pop(context);
+                            context.go('/login');
                           }
                         },
                       ),
@@ -296,7 +309,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                             onPressed: isLoading ? null : () => setState(() => _currentStep--),
                                             style: OutlinedButton.styleFrom(
                                               padding: const EdgeInsets.symmetric(vertical: 18.0),
-                                              side: BorderSide(color: AppTheme.textSecondary.withOpacity(0.3)),
+                                              side: BorderSide(color: AppTheme.textSecondary.withValues(alpha: 0.3)),
                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                             ),
                                             child: Text("Back", style: GoogleFonts.outfit(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
@@ -327,6 +340,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 
@@ -508,7 +522,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
-            value: _speciesValue,
+            initialValue: _speciesValue,
             decoration: _buildInputDecoration("Species"),
             dropdownColor: const Color(0xFF1A1200),
             style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
@@ -602,26 +616,26 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           Container(
             padding: const EdgeInsets.all(20.0),
             decoration: BoxDecoration(
-              color: const Color(0xFF1A1200).withOpacity(0.5),
+              color: const Color(0xFF1A1200).withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppTheme.textSecondary.withOpacity(0.1)),
+              border: Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.1)),
             ),
             child: Column(
               children: [
                 _InfoRow(label: "Name", value: _nameCtrl.text),
-                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withOpacity(0.1))),
+                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withValues(alpha: 0.1))),
                 _InfoRow(label: "Email", value: _emailCtrl.text),
-                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withOpacity(0.1))),
+                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withValues(alpha: 0.1))),
                 _InfoRow(label: "Phone", value: _phoneCtrl.text),
-                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withOpacity(0.1))),
+                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withValues(alpha: 0.1))),
                 _InfoRow(label: "Pet Name", value: _petNameCtrl.text),
-                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withOpacity(0.1))),
+                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withValues(alpha: 0.1))),
                 _InfoRow(label: "Species", value: _speciesValue ?? "-"),
-                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withOpacity(0.1))),
+                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withValues(alpha: 0.1))),
                 _InfoRow(label: "Breed", value: _breedCtrl.text),
-                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withOpacity(0.1))),
+                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withValues(alpha: 0.1))),
                 _InfoRow(label: "Age", value: "${_ageCtrl.text} yrs"),
-                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withOpacity(0.1))),
+                Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppTheme.textSecondary.withValues(alpha: 0.1))),
                 _InfoRow(label: "Weight", value: "${_weightCtrl.text} kg"),
               ],
             ),

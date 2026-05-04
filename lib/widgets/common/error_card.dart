@@ -12,11 +12,11 @@ class ErrorCard extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         color: AppTheme.surface,
-        border: Border.all(color: AppTheme.error.withOpacity(0.5), width: 1.5),
+        border: Border.all(color: AppTheme.error.withValues(alpha: 0.5), width: 1.5),
         borderRadius: AppTheme.cardRadius,
         boxShadow: [
           BoxShadow(
-            color: AppTheme.error.withOpacity(0.05),
+            color: AppTheme.error.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -29,7 +29,7 @@ class ErrorCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppTheme.error.withOpacity(0.1),
+                color: AppTheme.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.error_outline_rounded, color: AppTheme.error, size: 24),

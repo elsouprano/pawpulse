@@ -42,7 +42,6 @@ class BookAppointmentBottomSheet extends StatefulWidget {
 class _BookAppointmentBottomSheetState extends State<BookAppointmentBottomSheet> {
   final _formKey = GlobalKey<FormState>();
 
-  final _vetNameCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
   String? _typeValue;
   String? _petIdValue;
@@ -50,7 +49,6 @@ class _BookAppointmentBottomSheetState extends State<BookAppointmentBottomSheet>
 
   @override
   void dispose() {
-    _vetNameCtrl.dispose();
     _notesCtrl.dispose();
     super.dispose();
   }
@@ -131,10 +129,10 @@ class _BookAppointmentBottomSheetState extends State<BookAppointmentBottomSheet>
       id: const Uuid().v4(),
       petId: _petIdValue!,
       ownerId: user.uid,
-      vetName: _vetNameCtrl.text.trim(),
+      vetName: 'Vet District Animal Clinic',
       type: _typeValue ?? 'Check-up',
       dateTime: _selectedDateTime,
-      status: 'Confirmed',
+      status: 'Pending',
       notes: _notesCtrl.text.trim(),
     );
 
@@ -164,7 +162,7 @@ class _BookAppointmentBottomSheetState extends State<BookAppointmentBottomSheet>
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: AppTheme.textSecondary.withOpacity(0.1)),
+        borderSide: BorderSide(color: AppTheme.textSecondary.withValues(alpha: 0.1)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
@@ -196,7 +194,7 @@ class _BookAppointmentBottomSheetState extends State<BookAppointmentBottomSheet>
                 width: 48,
                 height: 6,
                 decoration: BoxDecoration(
-                  color: AppTheme.textSecondary.withOpacity(0.3),
+                  color: AppTheme.textSecondary.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
@@ -219,15 +217,35 @@ class _BookAppointmentBottomSheetState extends State<BookAppointmentBottomSheet>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          TextFormField(
-                            controller: _vetNameCtrl,
-                            style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
-                            decoration: _buildInputDecoration("Vet Name", prefixIcon: Icons.person_outline_rounded),
-                            validator: (v) => v!.isEmpty ? 'Required' : null,
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: AppTheme.card,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.local_hospital_outlined, color: AppTheme.primary, size: 18),
+                                const SizedBox(width: 8),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Veterinary Clinic",
+                                      style: GoogleFonts.nunito(fontSize: 12, color: AppTheme.textSecondary),
+                                    ),
+                                    Text(
+                                      "Vet District Animal Clinic",
+                                      style: GoogleFonts.nunito(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 16),
                           DropdownButtonFormField<String>(
-                            value: _typeValue,
+                            initialValue: _typeValue,
                             decoration: _buildInputDecoration("Type"),
                             dropdownColor: AppTheme.card,
                             style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
@@ -243,7 +261,7 @@ class _BookAppointmentBottomSheetState extends State<BookAppointmentBottomSheet>
                           ),
                           const SizedBox(height: 16),
                           DropdownButtonFormField<String>(
-                            value: _petIdValue,
+                            initialValue: _petIdValue,
                             decoration: _buildInputDecoration("Select Pet"),
                             dropdownColor: AppTheme.card,
                             style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
@@ -269,7 +287,7 @@ class _BookAppointmentBottomSheetState extends State<BookAppointmentBottomSheet>
                               decoration: BoxDecoration(
                                 color: AppTheme.background,
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: AppTheme.textSecondary.withOpacity(0.1)),
+                                border: Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.1)),
                               ),
                               child: Row(
                                 children: [

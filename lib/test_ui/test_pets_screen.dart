@@ -11,7 +11,7 @@ import '../providers/pet_provider.dart';
 import '../services/pet_service.dart';
 
 class TestPetsScreen extends StatefulWidget {
-  const TestPetsScreen({Key? key}) : super(key: key);
+  const TestPetsScreen({super.key});
 
   @override
   State<TestPetsScreen> createState() => _TestPetsScreenState();
@@ -148,7 +148,7 @@ class _TestPetsScreenState extends State<TestPetsScreen> {
                         isThreeLine: true,
                         onTap: () => _petProvider.selectPet(pet),
                         selected: state.selectedPet?.id == pet.id,
-                        selectedTileColor: Colors.blue.withOpacity(0.1),
+                        selectedTileColor: Colors.blue.withValues(alpha: 0.1),
                       ),
                     );
                   },

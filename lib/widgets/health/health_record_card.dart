@@ -47,10 +47,10 @@ class _HealthRecordCardState extends State<HealthRecordCard> {
         decoration: BoxDecoration(
           color: AppTheme.card,
           borderRadius: AppTheme.cardRadius,
-          border: Border.all(color: AppTheme.textSecondary.withOpacity(0.05)),
+          border: Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.05)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.12),
+              color: Colors.black.withValues(alpha: 0.12),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -79,7 +79,7 @@ class _HealthRecordCardState extends State<HealthRecordCard> {
                               width: 44,
                               height: 44,
                               decoration: BoxDecoration(
-                                color: typeColor.withOpacity(0.15),
+                                color: typeColor.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(typeIcon, size: 22, color: typeColor),
@@ -109,13 +109,43 @@ class _HealthRecordCardState extends State<HealthRecordCard> {
                                 ],
                               ),
                             ),
-                            Text(
-                              dateStr,
-                              style: GoogleFonts.nunito(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: AppTheme.textSecondary,
-                              ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  dateStr,
+                                  style: GoogleFonts.nunito(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                ),
+                                if (widget.record.clinicalNotes != null) ...[
+                                  const SizedBox(height: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.accent.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.local_hospital_outlined, size: 12, color: AppTheme.accent),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          "Reviewed",
+                                          style: GoogleFonts.nunito(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppTheme.accent,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ],
                         ),
@@ -125,7 +155,7 @@ class _HealthRecordCardState extends State<HealthRecordCard> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               const SizedBox(height: 16),
-                              Divider(color: AppTheme.textSecondary.withOpacity(0.1)),
+                              Divider(color: AppTheme.textSecondary.withValues(alpha: 0.1)),
                               const SizedBox(height: 12),
                               Text("Notes", style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
                               const SizedBox(height: 6),
@@ -134,6 +164,63 @@ class _HealthRecordCardState extends State<HealthRecordCard> {
                                 style: GoogleFonts.nunito(fontSize: 14, fontWeight: FontWeight.w500, color: AppTheme.textPrimary, height: 1.5),
                               ),
                               const SizedBox(height: 4),
+                              
+                              if (widget.record.clinicalNotes != null) ...[
+                                const SizedBox(height: 16),
+                                Divider(color: Colors.white.withValues(alpha: 0.05)),
+                                const SizedBox(height: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.accent.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.local_hospital_outlined, size: 14, color: AppTheme.accent),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        (widget.record.addedByAdminName != null && widget.record.addedByAdminName!.isNotEmpty)
+                                            ? widget.record.addedByAdminName!
+                                            : 'Vet District Animal Clinic',
+                                        style: GoogleFonts.nunito(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.accent),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Text("Clinical Notes", style: GoogleFonts.nunito(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textSecondary)),
+                                const SizedBox(height: 4),
+                                Text(
+                                  widget.record.clinicalNotes!,
+                                  style: GoogleFonts.nunito(fontSize: 13, color: AppTheme.textPrimary),
+                                ),
+                                if (widget.record.prescribedMedications != null && widget.record.prescribedMedications!.isNotEmpty) ...[
+                                  const SizedBox(height: 12),
+                                  Text("Prescribed Medications", style: GoogleFonts.nunito(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textSecondary)),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    widget.record.prescribedMedications!,
+                                    style: GoogleFonts.nunito(fontSize: 13, color: AppTheme.textPrimary),
+                                  ),
+                                ],
+                                if (widget.record.recommendedActions != null && widget.record.recommendedActions!.isNotEmpty) ...[
+                                  const SizedBox(height: 12),
+                                  Text("Recommended Actions", style: GoogleFonts.nunito(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textSecondary)),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    widget.record.recommendedActions!,
+                                    style: GoogleFonts.nunito(fontSize: 13, color: AppTheme.textPrimary),
+                                  ),
+                                ],
+                                const SizedBox(height: 12),
+                                Text(
+                                  "Added ${widget.record.clinicalNotesAddedAt != null ? DateFormat('MMM d, yyyy').format(widget.record.clinicalNotesAddedAt!) : 'Unknown'}",
+                                  style: GoogleFonts.nunito(fontSize: 11, color: AppTheme.textSecondary),
+                                ),
+                                const SizedBox(height: 4),
+                              ],
                             ],
                           ),
                           crossFadeState: _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,

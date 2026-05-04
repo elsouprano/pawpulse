@@ -132,7 +132,7 @@ class _AddHealthRecordBottomSheetState extends State<AddHealthRecordBottomSheet>
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: AppTheme.textSecondary.withOpacity(0.1)),
+        borderSide: BorderSide(color: AppTheme.textSecondary.withValues(alpha: 0.1)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
@@ -162,7 +162,7 @@ class _AddHealthRecordBottomSheetState extends State<AddHealthRecordBottomSheet>
                 width: 48,
                 height: 6,
                 decoration: BoxDecoration(
-                  color: AppTheme.textSecondary.withOpacity(0.3),
+                  color: AppTheme.textSecondary.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
@@ -186,7 +186,7 @@ class _AddHealthRecordBottomSheetState extends State<AddHealthRecordBottomSheet>
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           DropdownButtonFormField<String>(
-                            value: _typeValue,
+                            initialValue: _typeValue,
                             decoration: _buildInputDecoration("Type"),
                             dropdownColor: AppTheme.card,
                             style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
@@ -214,7 +214,7 @@ class _AddHealthRecordBottomSheetState extends State<AddHealthRecordBottomSheet>
                               decoration: BoxDecoration(
                                 color: AppTheme.background,
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: AppTheme.textSecondary.withOpacity(0.1)),
+                                border: Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.1)),
                               ),
                               child: Row(
                                 children: [

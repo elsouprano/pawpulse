@@ -11,7 +11,7 @@ import '../providers/health_record_provider.dart';
 import '../services/health_record_service.dart';
 
 class TestHealthRecordsScreen extends StatefulWidget {
-  const TestHealthRecordsScreen({Key? key}) : super(key: key);
+  const TestHealthRecordsScreen({super.key});
 
   @override
   State<TestHealthRecordsScreen> createState() => _TestHealthRecordsScreenState();

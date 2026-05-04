@@ -22,11 +22,20 @@ class AuthService {
         password: password,
       );
       if (credential.user != null) {
+        await credential.user!.sendEmailVerification();
         return Success(credential.user!);
       }
       return Failure(AuthException('User creation failed: Unknown error'));
     } on FirebaseAuthException catch (e) {
-      return Failure(AuthException(e.message ?? 'Authentication error'));
+      String message = e.message ?? 'Authentication error';
+      if (e.code == 'email-already-in-use') {
+        message = 'This email is already registered. Please log in instead.';
+      } else if (e.code == 'weak-password') {
+        message = 'The password provided is too weak.';
+      } else if (e.code == 'invalid-email') {
+        message = 'Please provide a valid email address.';
+      }
+      return Failure(AuthException(message));
     } catch (e) {
       return Failure(AuthException(e.toString()));
     }
@@ -43,7 +52,15 @@ class AuthService {
       }
       return Failure(AuthException('Sign in failed: Unknown error'));
     } on FirebaseAuthException catch (e) {
-      return Failure(AuthException(e.message ?? 'Authentication error'));
+      String message = e.message ?? 'Authentication error';
+      if (e.code == 'invalid-credential' || e.code == 'wrong-password' || e.code == 'user-not-found') {
+        message = 'Invalid email or password. Please try again or register if you do not have an account.';
+      } else if (e.code == 'user-disabled') {
+        message = 'This account has been disabled. Please contact support.';
+      } else if (e.code == 'invalid-email') {
+        message = 'Please provide a valid email address.';
+      }
+      return Failure(AuthException(message));
     } catch (e) {
       return Failure(AuthException(e.toString()));
     }

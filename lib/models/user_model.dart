@@ -15,6 +15,7 @@ class UserModel extends Equatable {
   final String? location;
   final DateTime? createdAt;
   final String? photoUrl;
+  final String role;
 
   const UserModel({
     required this.uid,
@@ -24,6 +25,7 @@ class UserModel extends Equatable {
     this.location,
     this.createdAt,
     this.photoUrl,
+    this.role = 'user',
   });
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
@@ -33,6 +35,7 @@ class UserModel extends Equatable {
         uid: doc.id,
         name: '',
         email: '',
+        role: 'user',
       );
     }
     return UserModel(
@@ -43,6 +46,7 @@ class UserModel extends Equatable {
       location: data['location'],
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
       photoUrl: data['photoUrl'],
+      role: data['role'] ?? 'user',
     );
   }
 
@@ -54,9 +58,10 @@ class UserModel extends Equatable {
       'location': location,
       'createdAt': createdAt == null ? FieldValue.serverTimestamp() : Timestamp.fromDate(createdAt!),
       'photoUrl': photoUrl,
+      'role': role,
     };
   }
 
   @override
-  List<Object?> get props => [uid, name, email, phone, location, createdAt, photoUrl];
+  List<Object?> get props => [uid, name, email, phone, location, createdAt, photoUrl, role];
 }

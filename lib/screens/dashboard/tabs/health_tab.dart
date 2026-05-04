@@ -7,7 +7,7 @@ import '../../../services/health_record_service.dart';
 import '../../../services/pet_service.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/health/health_record_card.dart';
-import '../../../widgets/health/add_health_record_bottom_sheet.dart';
+
 import '../../../models/health_record_model.dart';
 
 class HealthTab extends StatefulWidget {
@@ -23,6 +23,7 @@ class _HealthTabState extends State<HealthTab> {
   late final HealthRecordService _healthRecordService;
   String? _selectedPetId;
   String _filter = "All";
+  String _searchQuery = "";
 
   @override
   void initState() {
@@ -59,15 +60,20 @@ class _HealthTabState extends State<HealthTab> {
 
   Widget _buildRecordList(List<HealthRecordModel> list) {
     if (list.isEmpty) {
+      if (_searchQuery.isNotEmpty) {
+        return Center(
+          child: Text("No records match your search", style: GoogleFonts.nunito(fontSize: 14, color: AppTheme.textSecondary)),
+        );
+      }
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.health_and_safety_rounded, size: 80, color: AppTheme.textSecondary.withOpacity(0.2)),
+            Icon(Icons.health_and_safety_rounded, size: 80, color: AppTheme.textSecondary.withValues(alpha: 0.2)),
             const SizedBox(height: 24),
             Text("No records found", style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
             const SizedBox(height: 8),
-            Text("Add a record using the + button", style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+            Text("Wait for an admin to add one", style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
           ],
         ),
       );
@@ -89,24 +95,7 @@ class _HealthTabState extends State<HealthTab> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (_selectedPetId == null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text("Please add a pet first", style: GoogleFonts.nunito(fontWeight: FontWeight.bold)),
-                backgroundColor: AppTheme.primary,
-              ),
-            );
-            return;
-          }
-          AddHealthRecordBottomSheet.show(context, _healthRecordService, _selectedPetId!);
-        },
-        backgroundColor: AppTheme.primary,
-        elevation: 8,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: const Icon(Icons.add_rounded, color: AppTheme.background, size: 28),
-      ),
+
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -123,6 +112,27 @@ class _HealthTabState extends State<HealthTab> {
                 ),
               ),
             ),
+            
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: TextField(
+                onChanged: (value) => setState(() => _searchQuery = value),
+                style: GoogleFonts.nunito(color: AppTheme.textPrimary),
+                decoration: InputDecoration(
+                  hintText: "Search by type or vet name...",
+                  hintStyle: GoogleFonts.nunito(color: AppTheme.textSecondary),
+                  prefixIcon: const Icon(Icons.search, color: AppTheme.textSecondary),
+                  filled: true,
+                  fillColor: AppTheme.card,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             
             // ── Filter Chips ──
             Padding(
@@ -158,7 +168,12 @@ class _HealthTabState extends State<HealthTab> {
                       ? allRecords
                       : allRecords.where((r) => r.type.toLowerCase().contains(_filter.toLowerCase().replaceAll('s', ''))).toList();
 
-                  return _buildRecordList(filtered);
+                  final searchFiltered = filtered.where((r) {
+                    final q = _searchQuery.toLowerCase();
+                    return r.type.toLowerCase().contains(q) || (r.vetName?.toLowerCase().contains(q) ?? false);
+                  }).toList();
+
+                  return _buildRecordList(searchFiltered);
                 },
               ),
             ),
@@ -188,10 +203,10 @@ class _FilterChip extends StatelessWidget {
         margin: const EdgeInsets.only(right: 12),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? AppTheme.primary.withOpacity(0.15) : AppTheme.surface,
+          color: isActive ? AppTheme.primary.withValues(alpha: 0.15) : AppTheme.surface,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isActive ? AppTheme.primary : AppTheme.textSecondary.withOpacity(0.1),
+            color: isActive ? AppTheme.primary : AppTheme.textSecondary.withValues(alpha: 0.1),
             width: isActive ? 2 : 1,
           ),
         ),

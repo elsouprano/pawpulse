@@ -8,7 +8,7 @@ import '../../../services/pet_service.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/appointments/appointment_card.dart';
 import '../../../widgets/appointments/book_appointment_bottom_sheet.dart';
-import '../../../widgets/common/gradient_button.dart';
+
 import '../../../models/appointment_model.dart';
 
 class AppointmentsTab extends StatefulWidget {
@@ -128,7 +128,7 @@ class _AppointmentsTabState extends State<AppointmentsTab> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.calendar_month_rounded, size: 80, color: AppTheme.textSecondary.withOpacity(0.2)),
+                            Icon(Icons.calendar_month_rounded, size: 80, color: AppTheme.textSecondary.withValues(alpha: 0.2)),
                             const SizedBox(height: 24),
                             Text(
                               "No $_filter appointments",
@@ -153,26 +153,54 @@ class _AppointmentsTabState extends State<AppointmentsTab> {
                         final pList = _petProvider.value.petList;
                         final pet = pList.where((p) => p.id == appointment.petId).firstOrNull;
 
+                        final statusLower = appointment.status.toLowerCase();
+                        final isCancelable = statusLower == 'confirmed' || statusLower == 'pending';
+
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 16.0),
                           child: AppointmentCard(
                             appointment: appointment,
                             petName: pet?.name,
-                            onCancel: () async {
-                              await _appointmentProvider.cancelAppointment(appointment.id);
-                              if (mounted && _appointmentProvider.value.error == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Appointment cancelled', style: GoogleFonts.nunito(fontWeight: FontWeight.bold)),
-                                    backgroundColor: AppTheme.success,
+                            onCancel: isCancelable ? () {
+                              showDialog(
+                                context: context,
+                                builder: (dialogContext) => AlertDialog(
+                                  backgroundColor: AppTheme.surface,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                  title: Text("Cancel Appointment", style: GoogleFonts.outfit(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
+                                  content: Text(
+                                    "Are you sure you want to cancel this appointment?",
+                                    style: GoogleFonts.nunito(color: AppTheme.textSecondary, fontWeight: FontWeight.w600),
                                   ),
-                                );
-                              }
-                            },
-                            onReschedule: () {
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(dialogContext),
+                                      child: Text("No", style: GoogleFonts.nunito(color: AppTheme.textSecondary, fontWeight: FontWeight.bold)),
+                                    ),
+                                    TextButton(
+                                      onPressed: () async {
+                                        Navigator.pop(dialogContext);
+                                        await _appointmentProvider.cancelAppointment(appointment.id);
+                                        if (!context.mounted) return;
+                                        if (_appointmentProvider.value.error == null) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Appointment cancelled', style: GoogleFonts.nunito(fontWeight: FontWeight.bold)),
+                                              backgroundColor: AppTheme.success,
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      child: Text("Yes, Cancel", style: GoogleFonts.nunito(color: AppTheme.error, fontWeight: FontWeight.bold)),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            } : null,
+                            onReschedule: isCancelable ? () {
                               if (_petProvider.value.petList.isEmpty) return;
                               BookAppointmentBottomSheet.show(context, _appointmentProvider, _petProvider.value.petList);
-                            },
+                            } : null,
                           ),
                         );
                       },
@@ -207,10 +235,10 @@ class _FilterChip extends StatelessWidget {
         margin: const EdgeInsets.only(right: 12),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? AppTheme.primary.withOpacity(0.15) : AppTheme.surface,
+          color: isActive ? AppTheme.primary.withValues(alpha: 0.15) : AppTheme.surface,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isActive ? AppTheme.primary : AppTheme.textSecondary.withOpacity(0.1),
+            color: isActive ? AppTheme.primary : AppTheme.textSecondary.withValues(alpha: 0.1),
             width: isActive ? 2 : 1,
           ),
         ),

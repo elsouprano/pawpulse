@@ -19,17 +19,16 @@ class MyPetsTab extends StatefulWidget {
 
 class _MyPetsTabState extends State<MyPetsTab> {
   late final PetProvider _petProvider;
+  String _searchQuery = "";
 
   @override
   void initState() {
     super.initState();
     _petProvider = PetProvider(PetService());
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final user = firebase_auth.FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        _petProvider.loadPets(user.uid);
-      }
-    });
+    final user = firebase_auth.FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _petProvider.loadPets(user.uid);
+    }
   }
 
   @override
@@ -63,7 +62,7 @@ class _MyPetsTabState extends State<MyPetsTab> {
                       const Spacer(),
                       Container(
                         decoration: BoxDecoration(
-                          color: AppTheme.primary.withOpacity(0.15),
+                          color: AppTheme.primary.withValues(alpha: 0.15),
                           shape: BoxShape.circle,
                         ),
                         child: IconButton(
@@ -72,6 +71,25 @@ class _MyPetsTabState extends State<MyPetsTab> {
                         ),
                       ),
                     ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: TextField(
+                    onChanged: (value) => setState(() => _searchQuery = value),
+                    style: GoogleFonts.nunito(color: AppTheme.textPrimary),
+                    decoration: InputDecoration(
+                      hintText: "Search pets by name or breed...",
+                      hintStyle: GoogleFonts.nunito(color: AppTheme.textSecondary),
+                      prefixIcon: const Icon(Icons.search, color: AppTheme.textSecondary),
+                      filled: true,
+                      fillColor: AppTheme.card,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
                   ),
                 ),
                 Expanded(
@@ -87,7 +105,7 @@ class _MyPetsTabState extends State<MyPetsTab> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.pets_rounded, size: 80, color: AppTheme.textSecondary.withOpacity(0.2)),
+                              Icon(Icons.pets_rounded, size: 80, color: AppTheme.textSecondary.withValues(alpha: 0.2)),
                               const SizedBox(height: 24),
                               Text("No pets yet", style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
                               const SizedBox(height: 8),
@@ -106,6 +124,17 @@ class _MyPetsTabState extends State<MyPetsTab> {
                         );
                       }
 
+                      final filteredPets = state.petList.where((pet) {
+                        final q = _searchQuery.toLowerCase();
+                        return pet.name.toLowerCase().contains(q) || pet.breed.toLowerCase().contains(q);
+                      }).toList();
+
+                      if (filteredPets.isEmpty && _searchQuery.isNotEmpty) {
+                        return Center(
+                          child: Text("No pets match your search", style: GoogleFonts.nunito(fontSize: 14, color: AppTheme.textSecondary)),
+                        );
+                      }
+
                       return GridView.builder(
                         padding: const EdgeInsets.all(20.0), // increased padding
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -115,16 +144,16 @@ class _MyPetsTabState extends State<MyPetsTab> {
                           childAspectRatio: 0.68, // adjusted for aesthetic card look natively
                         ),
                         physics: const BouncingScrollPhysics(),
-                        itemCount: state.petList.length + 1,
+                        itemCount: filteredPets.length + 1,
                         itemBuilder: (context, index) {
-                          if (index == state.petList.length) {
+                          if (index == filteredPets.length) {
                             return GestureDetector(
                               onTap: () => AddPetBottomSheet.show(context, _petProvider),
                               child: Container(
                                 decoration: BoxDecoration(
                                   color: AppTheme.surface,
                                   borderRadius: AppTheme.cardRadius,
-                                  border: Border.all(color: AppTheme.textSecondary.withOpacity(0.15), width: 1.5),
+                                  border: Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.15), width: 1.5),
                                   boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
                                 ),
                                 child: Column(
@@ -133,7 +162,7 @@ class _MyPetsTabState extends State<MyPetsTab> {
                                     Container(
                                       padding: const EdgeInsets.all(16),
                                       decoration: BoxDecoration(
-                                        color: AppTheme.primary.withOpacity(0.1),
+                                        color: AppTheme.primary.withValues(alpha: 0.1),
                                         shape: BoxShape.circle,
                                       ),
                                       child: const Icon(Icons.add_rounded, size: 36, color: AppTheme.primary),
@@ -146,9 +175,9 @@ class _MyPetsTabState extends State<MyPetsTab> {
                             );
                           }
                           return PetCard(
-                            pet: state.petList[index],
+                            pet: filteredPets[index],
                             onTap: () {
-                              context.push('/pet-detail', extra: state.petList[index]);
+                              context.push('/pet-detail', extra: filteredPets[index]);
                             },
                           );
                         },
@@ -180,7 +209,7 @@ class _MyPetsTabState extends State<MyPetsTab> {
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.primary.withOpacity(0.3),
+                        color: AppTheme.primary.withValues(alpha: 0.3),
                         blurRadius: 15,
                         offset: const Offset(0, 6),
                       ),

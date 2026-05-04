@@ -1,6 +1,8 @@
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import '../../../providers/auth_provider.dart';
 import '../../../providers/pet_provider.dart';
@@ -9,11 +11,15 @@ import '../../../services/auth_service.dart';
 import '../../../services/pet_service.dart';
 import '../../../services/appointment_service.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/common/gradient_button.dart';
 import '../../../widgets/dashboard/section_header.dart';
+import '../../../widgets/pets/add_pet_bottom_sheet.dart';
 import '../dashboard_inherited.dart';
 import '../../scanner/ai_scanner_screen.dart';
 import '../../../models/pet_model.dart';
 import '../../../models/appointment_model.dart';
+import '../../../models/health_record_model.dart';
+import '../../../models/scan_result_model.dart';
 
 class OverviewTab extends StatefulWidget {
   const OverviewTab({super.key});
@@ -45,13 +51,11 @@ class _OverviewTabState extends State<OverviewTab> with SingleTickerProviderStat
 
     _animCtrl.forward();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final user = firebase_auth.FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        _petProvider.loadPets(user.uid);
-        _appointmentProvider.loadAppointments(user.uid);
-      }
-    });
+    final user = firebase_auth.FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _petProvider.loadPets(user.uid);
+      _appointmentProvider.loadAppointments(user.uid);
+    }
   }
 
   @override
@@ -104,7 +108,7 @@ class _OverviewTabState extends State<OverviewTab> with SingleTickerProviderStat
           colors: [
             const Color(0xFFFF8C42),
             const Color(0xFFFFD166),
-            const Color(0xFFFF8C42).withOpacity(0.6),
+            const Color(0xFFFF8C42).withValues(alpha: 0.6),
           ],
           stops: const [0.0, 0.6, 1.0],
         ),
@@ -117,15 +121,15 @@ class _OverviewTabState extends State<OverviewTab> with SingleTickerProviderStat
         children: [
           Positioned(
             top: -30, right: -20,
-            child: Container(width: 160, height: 160, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withOpacity(0.08))),
+            child: Container(width: 160, height: 160, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.08))),
           ),
           Positioned(
             bottom: -40, right: 60,
-            child: Container(width: 120, height: 120, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withOpacity(0.06))),
+            child: Container(width: 120, height: 120, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.06))),
           ),
           Positioned(
             top: 20, right: 80,
-            child: Container(width: 60, height: 60, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withOpacity(0.1))),
+            child: Container(width: 60, height: 60, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.1))),
           ),
           Padding(
             padding: EdgeInsets.only(
@@ -143,7 +147,7 @@ class _OverviewTabState extends State<OverviewTab> with SingleTickerProviderStat
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Good $timeOfDay,", style: GoogleFonts.nunito(fontSize: 15, color: const Color(0xFF1A1200).withOpacity(0.7))),
+                        Text("Good $timeOfDay,", style: GoogleFonts.nunito(fontSize: 15, color: const Color(0xFF1A1200).withValues(alpha: 0.7))),
                         Text(name, style: GoogleFonts.outfit(fontSize: 26, fontWeight: FontWeight.w800, color: const Color(0xFF1A1200))),
                       ],
                     ),
@@ -155,8 +159,8 @@ class _OverviewTabState extends State<OverviewTab> with SingleTickerProviderStat
                         height: 48,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: const Color(0xFF1A1200).withOpacity(0.15),
-                          border: Border.all(color: const Color(0xFF1A1200).withOpacity(0.2), width: 2),
+                          color: const Color(0xFF1A1200).withValues(alpha: 0.15),
+                          border: Border.all(color: const Color(0xFF1A1200).withValues(alpha: 0.2), width: 2),
                         ),
                         child: Center(
                           child: Text(
@@ -199,15 +203,15 @@ class _OverviewTabState extends State<OverviewTab> with SingleTickerProviderStat
       },
       {
         'icon': Icons.calendar_month_rounded, 'value': "$upcomingCount", 'label': "Appointments",
-        'trendUp': true, 'colors': const [Color(0xFF2C1F00), Color(0xFF3D2C00)], 'border': Border.all(color: AppTheme.primary.withOpacity(0.3)),
+        'trendUp': true, 'colors': const [Color(0xFF2C1F00), Color(0xFF3D2C00)], 'border': Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
       },
       {
         'icon': Icons.warning_amber_rounded, 'value': "$alertCount", 'label': "Alerts",
-        'trendUp': false, 'colors': [const Color(0xFFFF6B6B).withOpacity(0.8), const Color(0xFFCC4444)], 'border': null,
+        'trendUp': false, 'colors': [const Color(0xFFFF6B6B).withValues(alpha: 0.8), const Color(0xFFCC4444)], 'border': null,
       },
       {
         'icon': Icons.vaccines_rounded, 'value': "2", 'label': "Vaccinations",
-        'trendUp': false, 'colors': [const Color(0xFF06D6A0).withOpacity(0.8), const Color(0xFF04A87D)], 'border': null,
+        'trendUp': false, 'colors': [const Color(0xFF06D6A0).withValues(alpha: 0.8), const Color(0xFF04A87D)], 'border': null,
       },
     ];
 
@@ -245,15 +249,15 @@ class _OverviewTabState extends State<OverviewTab> with SingleTickerProviderStat
                     children: [
                       Row(
                         children: [
-                          Icon(c['icon'] as IconData, size: 18, color: Colors.white.withOpacity(0.9)),
+                          Icon(c['icon'] as IconData, size: 18, color: Colors.white.withValues(alpha: 0.9)),
                           const Spacer(),
-                          Icon((c['trendUp'] as bool) ? Icons.arrow_upward : Icons.arrow_downward, size: 14, color: Colors.white.withOpacity(0.7)),
+                          Icon((c['trendUp'] as bool) ? Icons.arrow_upward : Icons.arrow_downward, size: 14, color: Colors.white.withValues(alpha: 0.7)),
                         ],
                       ),
                       const Spacer(),
                       Text(c['value'] as String, style: GoogleFonts.outfit(fontSize: 28, fontWeight: FontWeight.w800, color: Colors.white)),
                       const SizedBox(height: 2),
-                      Text(c['label'] as String, style: GoogleFonts.nunito(fontSize: 11, color: Colors.white.withOpacity(0.75)), maxLines: 1),
+                      Text(c['label'] as String, style: GoogleFonts.nunito(fontSize: 11, color: Colors.white.withValues(alpha: 0.75)), maxLines: 1),
                     ],
                   ),
                 ),
@@ -287,11 +291,11 @@ class _OverviewTabState extends State<OverviewTab> with SingleTickerProviderStat
               decoration: BoxDecoration(
                 color: AppTheme.surface,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppTheme.primary.withOpacity(0.15)),
+                border: Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.pets, size: 32, color: AppTheme.primary.withOpacity(0.4)),
+                  Icon(Icons.pets, size: 32, color: AppTheme.primary.withValues(alpha: 0.4)),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -328,7 +332,7 @@ class _OverviewTabState extends State<OverviewTab> with SingleTickerProviderStat
                       decoration: BoxDecoration(
                         color: AppTheme.surface,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppTheme.primary.withOpacity(0.2)),
+                        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -358,14 +362,14 @@ class _OverviewTabState extends State<OverviewTab> with SingleTickerProviderStat
                   grad = const LinearGradient(colors: [AppTheme.error, Color(0xFFFF9494)]);
                   emoji = "🐇";
                 } else {
-                  grad = LinearGradient(colors: [AppTheme.textSecondary, AppTheme.textSecondary.withOpacity(0.7)]);
+                  grad = LinearGradient(colors: [AppTheme.textSecondary, AppTheme.textSecondary.withValues(alpha: 0.7)]);
                   emoji = "🐾";
                 }
 
                 Color healthColor = AppTheme.success;
                 final s = pet.healthStatus.toLowerCase();
-                if (s.contains('attention') || s.contains('issue')) healthColor = AppTheme.secondary;
-                else if (s.contains('critical') || s.contains('bad')) healthColor = AppTheme.error;
+                if (s.contains('attention') || s.contains('issue')) { healthColor = AppTheme.secondary; }
+                else if (s.contains('critical') || s.contains('bad')) { healthColor = AppTheme.error; }
 
                 return _staggered(
                   index,
@@ -435,11 +439,11 @@ class _OverviewTabState extends State<OverviewTab> with SingleTickerProviderStat
               decoration: BoxDecoration(
                 color: AppTheme.surface,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppTheme.primary.withOpacity(0.15)),
+                border: Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.calendar_month_outlined, size: 32, color: AppTheme.primary.withOpacity(0.4)),
+                  Icon(Icons.calendar_month_outlined, size: 32, color: AppTheme.primary.withValues(alpha: 0.4)),
                   const SizedBox(width: 16),
                   Text("No upcoming appointments", style: GoogleFonts.nunito(fontSize: 13, color: AppTheme.textSecondary)),
                 ],
@@ -450,7 +454,13 @@ class _OverviewTabState extends State<OverviewTab> with SingleTickerProviderStat
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
-              children: upcoming.take(3).map((appt) {
+              children: upcoming
+                  .where((a) {
+                    final s = a.status.toLowerCase();
+                    return s == 'confirmed' || s == 'pending';
+                  })
+                  .take(3)
+                  .map((appt) {
                 return _AppointmentRow(appointment: appt);
               }).toList(),
             ),
@@ -459,7 +469,251 @@ class _OverviewTabState extends State<OverviewTab> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildRecentActivity() {
+  Widget _buildVaccinationReminders(List<PetModel> petList) {
+    if (petList.isEmpty) return const SizedBox.shrink();
+
+    final petIds = petList.map((p) => p.id).toList();
+    final Map<String, String> petNameMap = {for (final p in petList) p.id: p.name};
+    final today = DateTime.now();
+    final cutoff = today.add(const Duration(days: 30));
+
+    return FutureBuilder<QuerySnapshot>(
+      future: FirebaseFirestore.instance
+          .collection('health_records')
+          .where('type', isEqualTo: 'Vaccination')
+          .get(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const SizedBox.shrink();
+
+        final records = snapshot.data!.docs
+            .map((doc) => HealthRecordModel.fromFirestore(doc))
+            .where((r) =>
+                petIds.contains(r.petId) &&
+                r.nextVaccinationDate != null &&
+                !r.nextVaccinationDate!.isBefore(today) &&
+                !r.nextVaccinationDate!.isAfter(cutoff))
+            .toList()
+          ..sort((a, b) => a.nextVaccinationDate!.compareTo(b.nextVaccinationDate!));
+
+        if (records.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 28),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: SectionHeader(title: 'Vaccination Reminders'),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: records.map((record) {
+                  final petName = petNameMap[record.petId] ?? 'Your pet';
+                  final due = record.nextVaccinationDate!;
+                  final todayOnly = DateTime(today.year, today.month, today.day);
+                  final daysUntil = due.difference(todayOnly).inDays;
+                  final formattedDate = DateFormat('MMM d, yyyy').format(due);
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppTheme.secondary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppTheme.secondary.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.vaccines_outlined, color: AppTheme.secondary, size: 24),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Vaccination Due Soon',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '$petName · Due $formattedDate',
+                                style: GoogleFonts.nunito(
+                                  fontSize: 13,
+                                  color: AppTheme.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppTheme.secondary.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            daysUntil == 0 ? 'Today' : '${daysUntil}d left',
+                            style: GoogleFonts.nunito(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.secondary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<List<_ActivityItem>> _fetchRecentActivity(String uid) async {
+    final fs = FirebaseFirestore.instance;
+    final items = <_ActivityItem>[];
+    final fmt = DateFormat('MMM d');
+
+    // Pets
+    try {
+      final snap = await fs
+          .collection('pets')
+          .where('ownerId', isEqualTo: uid)
+          .orderBy('createdAt', descending: true)
+          .limit(5)
+          .get();
+      for (final doc in snap.docs) {
+        final pet = PetModel.fromFirestore(doc);
+        if (pet.createdAt != null) {
+          items.add(_ActivityItem(
+            icon: Icons.pets,
+            color: AppTheme.primary,
+            title: '${pet.name} added',
+            subtitle: 'New pet profile',
+            date: pet.createdAt!,
+            dateLabel: fmt.format(pet.createdAt!),
+          ));
+        }
+      }
+    } catch (_) {}
+
+    // Appointments
+    try {
+      final snap = await fs
+          .collection('appointments')
+          .where('ownerId', isEqualTo: uid)
+          .orderBy('dateTime', descending: true)
+          .limit(5)
+          .get();
+      for (final doc in snap.docs) {
+        final appt = AppointmentModel.fromFirestore(doc);
+        if (appt.dateTime != null) {
+          items.add(_ActivityItem(
+            icon: Icons.calendar_month,
+            color: AppTheme.secondary,
+            title: 'Appointment booked',
+            subtitle: '${appt.type} · ${appt.vetName}',
+            date: appt.dateTime!,
+            dateLabel: fmt.format(appt.dateTime!),
+          ));
+        }
+      }
+    } catch (_) {}
+
+    // Health Records
+    try {
+      final petSnap = await fs
+          .collection('pets')
+          .where('ownerId', isEqualTo: uid)
+          .get();
+      final petIds = petSnap.docs.map((d) => d.id).toList();
+      if (petIds.isNotEmpty) {
+        final snap = await fs
+            .collection('health_records')
+            .where('petId', whereIn: petIds.take(10).toList())
+            .orderBy('date', descending: true)
+            .limit(5)
+            .get();
+        for (final doc in snap.docs) {
+          final rec = HealthRecordModel.fromFirestore(doc);
+          if (rec.date != null) {
+            items.add(_ActivityItem(
+              icon: Icons.health_and_safety,
+              color: AppTheme.accent,
+              title: 'Health record added',
+              subtitle: rec.type,
+              date: rec.date!,
+              dateLabel: fmt.format(rec.date!),
+            ));
+          }
+        }
+      }
+    } catch (_) {}
+
+    // Scans
+    try {
+      final snap = await fs
+          .collection('scans')
+          .where('ownerId', isEqualTo: uid)
+          .orderBy('scannedAt', descending: true)
+          .limit(5)
+          .get();
+      for (final doc in snap.docs) {
+        final scan = ScanResultModel.fromFirestore(doc);
+        if (scan.scannedAt != null) {
+          items.add(_ActivityItem(
+            icon: Icons.document_scanner_outlined,
+            color: AppTheme.primary,
+            title: 'AI Scan saved',
+            subtitle: scan.breedDetected,
+            date: scan.scannedAt!,
+            dateLabel: fmt.format(scan.scannedAt!),
+          ));
+        }
+      }
+    } catch (_) {}
+
+    // Expenses
+    try {
+      final snap = await fs
+          .collection('expenses')
+          .where('ownerId', isEqualTo: uid)
+          .orderBy('date', descending: true)
+          .limit(5)
+          .get();
+      for (final doc in snap.docs) {
+        final data = doc.data();
+        final ts = data['date'];
+        final date = ts is Timestamp ? ts.toDate() : null;
+        if (date != null) {
+          final category = data['category'] ?? 'Expense';
+          final amount = data['amount']?.toString() ?? '0';
+          items.add(_ActivityItem(
+            icon: Icons.receipt_outlined,
+            color: AppTheme.secondary,
+            title: 'Expense logged',
+            subtitle: '$category · ₱$amount',
+            date: date,
+            dateLabel: fmt.format(date),
+          ));
+        }
+      }
+    } catch (_) {}
+
+    items.sort((a, b) => b.date.compareTo(a.date));
+    return items.take(5).toList();
+  }
+
+  Widget _buildRecentActivity(String uid) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -471,25 +725,52 @@ class _OverviewTabState extends State<OverviewTab> with SingleTickerProviderStat
         const SizedBox(height: 12),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppTheme.surface,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppTheme.primary.withOpacity(0.1)),
-            ),
-            child: Column(
-              children: [
-                _buildActivityTile(Icons.pets, AppTheme.primary, "Max had a check-up", "Vet: Dr. Santos", "2h ago"),
-                Divider(height: 1, color: Colors.white.withOpacity(0.05), indent: 16, endIndent: 16),
-                _buildActivityTile(Icons.vaccines, AppTheme.accent, "Vaccination recorded", "Rabies shot", "Yesterday"),
-                Divider(height: 1, color: Colors.white.withOpacity(0.05), indent: 16, endIndent: 16),
-                _buildActivityTile(Icons.calendar_month, AppTheme.secondary, "Appointment booked", "Dr. Reyes, Fri", "2d ago"),
-                Divider(height: 1, color: Colors.white.withOpacity(0.05), indent: 16, endIndent: 16),
-                _buildActivityTile(Icons.warning_amber, AppTheme.error, "Health alert", "Bella needs attention", "3d ago"),
-                Divider(height: 1, color: Colors.white.withOpacity(0.05), indent: 16, endIndent: 16),
-                _buildActivityTile(Icons.check_circle, AppTheme.success, "Profile updated", "Luna's weight updated", "5d ago"),
-              ],
-            ),
+          child: FutureBuilder<List<_ActivityItem>>(
+            future: _fetchRecentActivity(uid),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: CircularProgressIndicator(color: AppTheme.primary),
+                ));
+              }
+              final items = snapshot.data ?? [];
+              if (items.isEmpty) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(vertical: 32),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.history, size: 48, color: AppTheme.textSecondary.withValues(alpha: 0.4)),
+                      const SizedBox(height: 12),
+                      Text('No recent activity yet',
+                          style: GoogleFonts.nunito(fontSize: 14, color: AppTheme.textSecondary)),
+                    ],
+                  ),
+                );
+              }
+              return Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
+                ),
+                child: Column(
+                  children: [
+                    for (int i = 0; i < items.length; i++) ...[
+                      _buildActivityTile(items[i].icon, items[i].color, items[i].title, items[i].subtitle, items[i].dateLabel),
+                      if (i < items.length - 1)
+                        Divider(height: 1, color: Colors.white.withValues(alpha: 0.05), indent: 16, endIndent: 16),
+                    ],
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ],
@@ -502,7 +783,7 @@ class _OverviewTabState extends State<OverviewTab> with SingleTickerProviderStat
         width: 38,
         height: 38,
         decoration: BoxDecoration(
-          color: color.withOpacity(0.15),
+          color: color.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(icon, size: 18, color: color),
@@ -529,9 +810,10 @@ class _OverviewTabState extends State<OverviewTab> with SingleTickerProviderStat
                 child: ValueListenableBuilder(
                   valueListenable: _authProvider,
                   builder: (context, authState, child) {
-                    final name = authState.currentUser?.displayName ?? "there";
+                    final rawName = authState.currentUser?.displayName;
+                    final name = (rawName == null || rawName.trim().isEmpty) ? "there" : rawName.trim();
                     final parts = name.split(' ');
-                    final firstName = parts.isNotEmpty ? parts[0] : name;
+                    final firstName = parts.isNotEmpty && name != "there" ? parts[0] : name;
 
                     return ValueListenableBuilder(
                       valueListenable: _petProvider,
@@ -546,15 +828,43 @@ class _OverviewTabState extends State<OverviewTab> with SingleTickerProviderStat
                               final s = p.healthStatus.toLowerCase();
                               return s.contains('attention') || s.contains('issue') || s.contains('critical');
                             }).length;
-
-                            return Column(
+return Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 _buildHero(firstName, petList.length, upcomingCount, alertCount),
-                                _buildStatCards(petList.length, upcomingCount, alertCount),
-                                _buildMyPetsPreview(petList),
-                                _buildUpcoming(upcomingList),
-                                _buildRecentActivity(),
+                                if (petList.isEmpty && !petState.isLoading)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 60),
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.pets, size: 72, color: AppTheme.textSecondary.withValues(alpha: 0.4)),
+                                          const SizedBox(height: 16),
+                                          Text("Welcome to PawPulse!", style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                                          const SizedBox(height: 8),
+                                          Text("Add your first pet to get started", style: GoogleFonts.nunito(fontSize: 14, color: AppTheme.textSecondary)),
+                                          const SizedBox(height: 24),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 40),
+                                            child: GradientButton(
+                                              label: "Add My First Pet",
+                                              onPressed: () => AddPetBottomSheet.show(context, _petProvider),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                else ...[
+                                  _buildStatCards(petList.length, upcomingCount, alertCount),
+                                  _buildMyPetsPreview(petList),
+                                  _buildUpcoming(upcomingList),
+                                  _buildVaccinationReminders(petList),
+                                  _buildRecentActivity(authState.currentUser?.uid ?? ''),
+                                ],
+                                const SizedBox(height: 16),
+                                _buildAiScannerBanner(),
                               ],
                             );
                           },
@@ -566,46 +876,60 @@ class _OverviewTabState extends State<OverviewTab> with SingleTickerProviderStat
               ),
             ),
           ),
-          Positioned(
-            bottom: 16,
-            right: 16,
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AiScannerScreen()),
-                );
-              },
-              child: Container(
-                width: 64,
-                height: 64,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAiScannerBanner() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const AiScannerScreen()));
+        },
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [AppTheme.primary, AppTheme.accent],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primary.withValues(alpha: 0.3),
+                blurRadius: 15,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppTheme.primary, AppTheme.accent],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.primary.withOpacity(0.3),
-                      blurRadius: 15,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
+                  color: AppTheme.background.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
                 ),
+                child: const Icon(Icons.document_scanner_rounded, color: AppTheme.background, size: 28),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.document_scanner_rounded, color: AppTheme.background, size: 24),
-                    const SizedBox(height: 2),
-                    Text("SCAN", style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.w900, color: AppTheme.background, letterSpacing: 1.0)),
+                    Text("AI Medical Scanner", style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.background)),
+                    const SizedBox(height: 4),
+                    Text("Analyze vet documents instantly", style: GoogleFonts.nunito(fontSize: 13, color: AppTheme.background.withValues(alpha: 0.9))),
                   ],
                 ),
               ),
-            ),
+              const Icon(Icons.chevron_right_rounded, color: AppTheme.background, size: 28),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -623,15 +947,15 @@ class _HeroStatPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1200).withOpacity(0.12),
+        color: const Color(0xFF1A1200).withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: const Color(0xFF1A1200).withOpacity(0.7)),
+          Icon(icon, size: 14, color: const Color(0xFF1A1200).withValues(alpha: 0.7)),
           const SizedBox(width: 6),
-          Text("$value $label", style: GoogleFonts.nunito(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF1A1200).withOpacity(0.8))),
+          Text("$value $label", style: GoogleFonts.nunito(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF1A1200).withValues(alpha: 0.8))),
         ],
       ),
     );
@@ -656,7 +980,7 @@ class _AppointmentRow extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.primary.withOpacity(0.1)),
+        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
@@ -664,7 +988,7 @@ class _AppointmentRow extends StatelessWidget {
             width: 44,
             height: 50,
             decoration: BoxDecoration(
-              color: AppTheme.primary.withOpacity(0.15),
+              color: AppTheme.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -704,16 +1028,16 @@ class _StatusChip extends StatelessWidget {
 
     final lowerStatus = status.toLowerCase();
     if (lowerStatus == 'confirmed') {
-      bgColor = AppTheme.success.withOpacity(0.15);
+      bgColor = AppTheme.success.withValues(alpha: 0.15);
       textColor = AppTheme.success;
     } else if (lowerStatus == 'pending') {
-      bgColor = AppTheme.secondary.withOpacity(0.15);
+      bgColor = AppTheme.secondary.withValues(alpha: 0.15);
       textColor = AppTheme.secondary;
     } else if (lowerStatus == 'cancelled') {
-      bgColor = AppTheme.error.withOpacity(0.15);
+      bgColor = AppTheme.error.withValues(alpha: 0.15);
       textColor = AppTheme.error;
     } else {
-      bgColor = AppTheme.textSecondary.withOpacity(0.15);
+      bgColor = AppTheme.textSecondary.withValues(alpha: 0.15);
       textColor = AppTheme.textSecondary;
     }
 
@@ -729,4 +1053,22 @@ class _StatusChip extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ActivityItem {
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
+  final DateTime date;
+  final String dateLabel;
+
+  const _ActivityItem({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.subtitle,
+    required this.date,
+    required this.dateLabel,
+  });
 }

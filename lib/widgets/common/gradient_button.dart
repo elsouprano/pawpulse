@@ -25,15 +25,15 @@ class GradientButton extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppTheme.secondary.withOpacity(isDisabled ? 0.3 : 1.0),
-            AppTheme.primary.withOpacity(isDisabled ? 0.5 : 1.0),
+            AppTheme.secondary.withValues(alpha: isDisabled ? 0.3 : 1.0),
+            AppTheme.primary.withValues(alpha: isDisabled ? 0.5 : 1.0),
           ],
         ),
         boxShadow: isDisabled
             ? null
             : [
                 BoxShadow(
-                  color: AppTheme.primary.withOpacity(0.3),
+                  color: AppTheme.primary.withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 6),
                 )
@@ -44,8 +44,8 @@ class GradientButton extends StatelessWidget {
         child: InkWell(
           borderRadius: AppTheme.buttonRadius,
           onTap: isDisabled ? null : onPressed,
-          splashColor: AppTheme.secondary.withOpacity(0.3),
-          highlightColor: AppTheme.primaryDark.withOpacity(0.1),
+          splashColor: AppTheme.secondary.withValues(alpha: 0.3),
+          highlightColor: AppTheme.primaryDark.withValues(alpha: 0.1),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 18.0),
             child: Center(

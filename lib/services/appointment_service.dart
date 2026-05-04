@@ -9,14 +9,17 @@ import '../core/constants/firebase_constants.dart';
 import '../core/errors/app_exceptions.dart';
 import '../core/utils/result.dart';
 import '../models/appointment_model.dart';
-import 'package:uuid/uuid.dart';
 
 class AppointmentService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<Result<void, AppointmentException>> bookAppointment(AppointmentModel appointment) async {
+  Future<Result<void, AppointmentException>> bookAppointment(
+    AppointmentModel appointment,
+  ) async {
     try {
-      final docRef = _firestore.collection(FirebaseConstants.appointmentsCollection).doc(appointment.id);
+      final docRef = _firestore
+          .collection(FirebaseConstants.appointmentsCollection)
+          .doc(appointment.id);
       await docRef.set(appointment.toFirestore());
       return const Success(null);
     } catch (e) {
@@ -30,7 +33,11 @@ class AppointmentService {
         .where('ownerId', isEqualTo: ownerId)
         .orderBy('dateTime', descending: false)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => AppointmentModel.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => AppointmentModel.fromFirestore(doc))
+              .toList(),
+        );
   }
 
   Stream<List<AppointmentModel>> getAppointmentsByPet(String petId) {
@@ -39,7 +46,11 @@ class AppointmentService {
         .where('petId', isEqualTo: petId)
         .orderBy('dateTime', descending: false)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => AppointmentModel.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => AppointmentModel.fromFirestore(doc))
+              .toList(),
+        );
   }
 
   Stream<List<AppointmentModel>> getUpcomingAppointments(String ownerId) {
@@ -49,10 +60,17 @@ class AppointmentService {
         .where('dateTime', isGreaterThanOrEqualTo: Timestamp.now())
         .orderBy('dateTime', descending: false)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => AppointmentModel.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => AppointmentModel.fromFirestore(doc))
+              .toList(),
+        );
   }
 
-  Future<Result<void, AppointmentException>> updateAppointmentStatus(String appointmentId, String status) async {
+  Future<Result<void, AppointmentException>> updateAppointmentStatus(
+    String appointmentId,
+    String status,
+  ) async {
     try {
       await _firestore
           .collection(FirebaseConstants.appointmentsCollection)
@@ -64,9 +82,14 @@ class AppointmentService {
     }
   }
 
-  Future<Result<void, AppointmentException>> cancelAppointment(String appointmentId) async {
+  Future<Result<void, AppointmentException>> cancelAppointment(
+    String appointmentId,
+  ) async {
     try {
-      await _firestore.collection(FirebaseConstants.appointmentsCollection).doc(appointmentId).delete();
+      await _firestore
+          .collection(FirebaseConstants.appointmentsCollection)
+          .doc(appointmentId)
+          .delete();
       return const Success(null);
     } catch (e) {
       return Failure(AppointmentException('Failed to cancel appointment: $e'));

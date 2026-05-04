@@ -34,7 +34,7 @@ class PetCard extends StatelessWidget {
       gradientColors = const [AppTheme.error, Color(0xFFFF9494)];
       emoji = "🐇";
     } else {
-      gradientColors = [AppTheme.textSecondary, AppTheme.textSecondary.withOpacity(0.7)];
+      gradientColors = [AppTheme.textSecondary, AppTheme.textSecondary.withValues(alpha: 0.7)];
       emoji = "🐾";
     }
 
@@ -44,10 +44,10 @@ class PetCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.card,
           borderRadius: AppTheme.cardRadius,
-          border: Border.all(color: AppTheme.textSecondary.withOpacity(0.05)),
+          border: Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.05)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.12),
+              color: Colors.black.withValues(alpha: 0.12),
               blurRadius: 15,
               offset: const Offset(0, 6),
             ),
@@ -81,7 +81,7 @@ class PetCard extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: AppTheme.background.withOpacity(0.2),
+                          color: AppTheme.background.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
                         child: Text(
@@ -177,19 +177,19 @@ class _HealthChip extends StatelessWidget {
 
     final lowerStatus = status.toLowerCase();
     if (lowerStatus.contains('healthy') || lowerStatus.contains('optimal')) {
-      bgColor = AppTheme.success.withOpacity(0.15);
+      bgColor = AppTheme.success.withValues(alpha: 0.15);
       textColor = AppTheme.success;
       icon = Icons.favorite_rounded;
     } else if (lowerStatus.contains('attention') || lowerStatus.contains('issue')) {
-      bgColor = AppTheme.secondary.withOpacity(0.15);
+      bgColor = AppTheme.secondary.withValues(alpha: 0.15);
       textColor = AppTheme.secondary;
       icon = Icons.warning_rounded;
     } else if (lowerStatus.contains('critical') || lowerStatus.contains('bad')) {
-      bgColor = AppTheme.error.withOpacity(0.15);
+      bgColor = AppTheme.error.withValues(alpha: 0.15);
       textColor = AppTheme.error;
       icon = Icons.emergency_rounded;
     } else {
-      bgColor = AppTheme.textSecondary.withOpacity(0.15);
+      bgColor = AppTheme.textSecondary.withValues(alpha: 0.15);
       textColor = AppTheme.textSecondary;
       icon = Icons.info_outline_rounded;
     }

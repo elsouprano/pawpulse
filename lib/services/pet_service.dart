@@ -9,14 +9,15 @@ import '../core/constants/firebase_constants.dart';
 import '../core/errors/app_exceptions.dart';
 import '../core/utils/result.dart';
 import '../models/pet_model.dart';
-import 'package:uuid/uuid.dart';
 
 class PetService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<Result<void, PetException>> addPet(PetModel pet) async {
     try {
-      final docRef = _firestore.collection(FirebaseConstants.petsCollection).doc(pet.id);
+      final docRef = _firestore
+          .collection(FirebaseConstants.petsCollection)
+          .doc(pet.id);
       await docRef.set(pet.toFirestore());
       return const Success(null);
     } catch (e) {
@@ -30,12 +31,18 @@ class PetService {
         .where('ownerId', isEqualTo: ownerId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => PetModel.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => PetModel.fromFirestore(doc)).toList(),
+        );
   }
 
   Future<Result<PetModel, PetException>> getPetById(String petId) async {
     try {
-      final doc = await _firestore.collection(FirebaseConstants.petsCollection).doc(petId).get();
+      final doc = await _firestore
+          .collection(FirebaseConstants.petsCollection)
+          .doc(petId)
+          .get();
       if (doc.exists) {
         return Success(PetModel.fromFirestore(doc));
       }
@@ -59,14 +66,20 @@ class PetService {
 
   Future<Result<void, PetException>> deletePet(String petId) async {
     try {
-      await _firestore.collection(FirebaseConstants.petsCollection).doc(petId).delete();
+      await _firestore
+          .collection(FirebaseConstants.petsCollection)
+          .doc(petId)
+          .delete();
       return const Success(null);
     } catch (e) {
       return Failure(PetException('Failed to delete pet: $e'));
     }
   }
 
-  Future<Result<void, PetException>> updateHealthStatus(String petId, String status) async {
+  Future<Result<void, PetException>> updateHealthStatus(
+    String petId,
+    String status,
+  ) async {
     try {
       await _firestore
           .collection(FirebaseConstants.petsCollection)

@@ -120,7 +120,7 @@ class _AddPetBottomSheetState extends State<AddPetBottomSheet> {
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: AppTheme.textSecondary.withOpacity(0.1)),
+        borderSide: BorderSide(color: AppTheme.textSecondary.withValues(alpha: 0.1)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
@@ -148,7 +148,7 @@ class _AddPetBottomSheetState extends State<AddPetBottomSheet> {
                 width: 48,
                 height: 6,
                 decoration: BoxDecoration(
-                  color: AppTheme.textSecondary.withOpacity(0.3),
+                  color: AppTheme.textSecondary.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
@@ -189,7 +189,7 @@ class _AddPetBottomSheetState extends State<AddPetBottomSheet> {
                                         : null,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: AppTheme.primary.withOpacity(0.2),
+                                        color: AppTheme.primary.withValues(alpha: 0.2),
                                         blurRadius: 15,
                                         offset: const Offset(0, 8),
                                       ),
@@ -229,7 +229,7 @@ class _AddPetBottomSheetState extends State<AddPetBottomSheet> {
                           ),
                           const SizedBox(height: 16),
                           DropdownButtonFormField<String>(
-                            value: _speciesValue,
+                            initialValue: _speciesValue,
                             decoration: _buildInputDecoration("Species"),
                             dropdownColor: AppTheme.card,
                             style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),

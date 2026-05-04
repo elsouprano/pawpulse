@@ -7,7 +7,6 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import '../core/config/env.dart';
 import '../core/constants/firebase_constants.dart';
@@ -18,8 +17,6 @@ import 'package:uuid/uuid.dart';
 
 class ScannerService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage =
-      FirebaseStorage.instance; // Left here if needed for later
 
   Future<Result<ScanResultModel, ScannerException>> analyzePetImage(
     String uid,
@@ -67,12 +64,14 @@ class ScannerService {
 
       // Safely clean up potential markdown formatting in Gemini's response
       String jsonText = response.text!.trim();
-      if (jsonText.startsWith('```json'))
+      if (jsonText.startsWith('```json')) {
         jsonText = jsonText.substring(7);
-      else if (jsonText.startsWith('```'))
+      } else if (jsonText.startsWith('```')) {
         jsonText = jsonText.substring(3);
-      if (jsonText.endsWith('```'))
+      }
+      if (jsonText.endsWith('```')) {
         jsonText = jsonText.substring(0, jsonText.length - 3);
+      }
 
       final data = jsonDecode(jsonText.trim()) as Map<String, dynamic>;
 

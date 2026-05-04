@@ -31,27 +31,24 @@ class _AiScannerScreenState extends State<AiScannerScreen> with SingleTickerProv
   bool _showResults = false;
   File? _selectedImage;
   ScanResultModel? _scanResult;
-  String? _resolvedPetId;
+  String? _selectedPetId;
+  String? _selectedPetName;
+  String? _selectedPetEmoji;
 
   @override
   void initState() {
     super.initState();
     _scannerProvider = ScannerProvider(ScannerService());
     _petProvider = PetProvider(PetService());
-    
-    // Resolve petId
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         _petProvider.loadPets(user.uid);
       }
-    });
-    
-    _petProvider.addListener(() {
-      if (_resolvedPetId == null && _petProvider.value.petList.isNotEmpty) {
-        setState(() {
-          _resolvedPetId = widget.overridePetId ?? _petProvider.value.petList.first.id;
-        });
+      // Pre-select if overridePetId was provided
+      if (widget.overridePetId != null) {
+        _petProvider.addListener(_preselectPet);
       }
     });
 
@@ -63,15 +60,47 @@ class _AiScannerScreenState extends State<AiScannerScreen> with SingleTickerProv
     _scanLineController.repeat(reverse: true);
   }
 
+  void _preselectPet() {
+    if (_selectedPetId == null && _petProvider.value.petList.isNotEmpty) {
+      final pet = _petProvider.value.petList
+          .firstWhere((p) => p.id == widget.overridePetId!, orElse: () => _petProvider.value.petList.first);
+      setState(() {
+        _selectedPetId = pet.id;
+        _selectedPetName = pet.name;
+        _selectedPetEmoji = _emojiForSpecies(pet.species);
+      });
+      _petProvider.removeListener(_preselectPet);
+    }
+  }
+
+  String _emojiForSpecies(String species) {
+    if (species.contains('Dog')) return '🐕';
+    if (species.contains('Cat')) return '🐈';
+    if (species.contains('Bird')) return '🐦';
+    if (species.contains('Rabbit')) return '🐇';
+    return '🐾';
+  }
+
   @override
   void dispose() {
+    _petProvider.removeListener(_preselectPet);
     _scanLineController.dispose();
     _scannerProvider.dispose();
     _petProvider.dispose();
     super.dispose();
   }
 
+  void _requirePetSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Please select a pet first', style: GoogleFonts.nunito(fontWeight: FontWeight.bold)),
+        backgroundColor: AppTheme.error,
+      ),
+    );
+  }
+
   Future<void> _pickImage() async {
+    if (_selectedPetId == null) { _requirePetSnackBar(); return; }
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
     if (pickedFile != null && mounted) {
@@ -84,10 +113,11 @@ class _AiScannerScreenState extends State<AiScannerScreen> with SingleTickerProv
   }
 
   Future<void> _startScan() async {
+    if (_selectedPetId == null) { _requirePetSnackBar(); return; }
     final user = FirebaseAuth.instance.currentUser;
     if (user == null || _selectedImage == null) return;
-    
-    final targetPetId = widget.overridePetId ?? _resolvedPetId ?? 'demo-pet-id';
+
+    final targetPetId = _selectedPetId!;
 
     setState(() => _isScanning = true);
     
@@ -153,7 +183,7 @@ class _AiScannerScreenState extends State<AiScannerScreen> with SingleTickerProv
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: iconColor.withOpacity(0.15), shape: BoxShape.circle),
+                decoration: BoxDecoration(color: iconColor.withValues(alpha: 0.15), shape: BoxShape.circle),
                 child: Icon(Icons.warning_amber_rounded, size: 20, color: iconColor),
               ),
               const SizedBox(width: 12),
@@ -169,7 +199,7 @@ class _AiScannerScreenState extends State<AiScannerScreen> with SingleTickerProv
           ),
         ),
         if (index != _scanResult!.healthFlags.length - 1)
-          Divider(height: 1, color: AppTheme.textSecondary.withOpacity(0.1)),
+          Divider(height: 1, color: AppTheme.textSecondary.withValues(alpha: 0.1)),
       ],
     );
   }
@@ -201,7 +231,7 @@ class _AiScannerScreenState extends State<AiScannerScreen> with SingleTickerProv
               decoration: BoxDecoration(
                 color: AppTheme.surface,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.primary.withOpacity(0.2), width: 1.5),
+                border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2), width: 1.5),
                 boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
               ),
               child: Row(
@@ -209,7 +239,7 @@ class _AiScannerScreenState extends State<AiScannerScreen> with SingleTickerProv
                 children: [
                   Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.15), shape: BoxShape.circle),
+                    decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.15), shape: BoxShape.circle),
                     child: const Icon(Icons.info_outline_rounded, color: AppTheme.primary, size: 20),
                   ),
                   const SizedBox(width: 16),
@@ -234,6 +264,100 @@ class _AiScannerScreenState extends State<AiScannerScreen> with SingleTickerProv
                       ],
                     ),
                   ),
+                ],
+              ),
+            ),
+
+            // ── Pet Selector ──
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Select Pet to Scan',
+                    style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                  ),
+                  const SizedBox(height: 8),
+                  ValueListenableBuilder(
+                    valueListenable: _petProvider,
+                    builder: (context, petState, _) {
+                      final pets = petState.petList;
+                      if (pets.isEmpty) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: AppTheme.surface,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.2)),
+                          ),
+                          child: Text('No pets found. Add a pet first.', style: GoogleFonts.nunito(color: AppTheme.textSecondary)),
+                        );
+                      }
+                      return DropdownButtonFormField<String>(
+                        initialValue: _selectedPetId,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: AppTheme.surface,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: AppTheme.textSecondary.withValues(alpha: 0.2)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: AppTheme.textSecondary.withValues(alpha: 0.2)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
+                          ),
+                        ),
+                        dropdownColor: AppTheme.surface,
+                        style: GoogleFonts.nunito(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                        hint: Text('Choose a pet...', style: GoogleFonts.nunito(color: AppTheme.textSecondary)),
+                        items: pets.map((pet) {
+                          final emoji = _emojiForSpecies(pet.species);
+                          return DropdownMenuItem<String>(
+                            value: pet.id,
+                            child: Text('$emoji  ${pet.name}', style: GoogleFonts.nunito(fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          if (val == null) return;
+                          final pet = pets.firstWhere((p) => p.id == val);
+                          setState(() {
+                            _selectedPetId = val;
+                            _selectedPetName = pet.name;
+                            _selectedPetEmoji = _emojiForSpecies(pet.species);
+                          });
+                        },
+                      );
+                    },
+                  ),
+                  if (_selectedPetId != null) ...
+                  [
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(_selectedPetEmoji ?? '🐾', style: const TextStyle(fontSize: 18)),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Scanning for: $_selectedPetName',
+                            style: GoogleFonts.nunito(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.primary),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 8),
                 ],
               ),
             ),
@@ -303,7 +427,7 @@ class _AiScannerScreenState extends State<AiScannerScreen> with SingleTickerProv
                                     ],
                                   ),
                                   boxShadow: [
-                                    BoxShadow(color: AppTheme.primary.withOpacity(0.5), blurRadius: 8, offset: const Offset(0, 0))
+                                    BoxShadow(color: AppTheme.primary.withValues(alpha: 0.5), blurRadius: 8, offset: const Offset(0, 0))
                                   ],
                                 ),
                               ),
@@ -318,7 +442,7 @@ class _AiScannerScreenState extends State<AiScannerScreen> with SingleTickerProv
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
-                              color: AppTheme.background.withOpacity(0.85),
+                              color: AppTheme.background.withValues(alpha: 0.85),
                               borderRadius: BorderRadius.circular(24),
                             ),
                             child: Row(
@@ -367,7 +491,7 @@ class _AiScannerScreenState extends State<AiScannerScreen> with SingleTickerProv
                           decoration: BoxDecoration(
                             color: AppTheme.surface,
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: AppTheme.textSecondary.withOpacity(0.05)),
+                            border: Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.05)),
                             boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
                           ),
                           child: Column(
@@ -387,7 +511,7 @@ class _AiScannerScreenState extends State<AiScannerScreen> with SingleTickerProv
                                 borderRadius: BorderRadius.circular(6),
                                 child: LinearProgressIndicator(
                                   value: _scanResult!.confidence,
-                                  backgroundColor: AppTheme.primary.withOpacity(0.15),
+                                  backgroundColor: AppTheme.primary.withValues(alpha: 0.15),
                                   valueColor: const AlwaysStoppedAnimation(AppTheme.primary),
                                   minHeight: 8,
                                 ),
@@ -404,7 +528,7 @@ class _AiScannerScreenState extends State<AiScannerScreen> with SingleTickerProv
                           decoration: BoxDecoration(
                             color: AppTheme.surface,
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: AppTheme.textSecondary.withOpacity(0.05)),
+                            border: Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.05)),
                             boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
                           ),
                           child: Column(
@@ -425,7 +549,7 @@ class _AiScannerScreenState extends State<AiScannerScreen> with SingleTickerProv
                           decoration: BoxDecoration(
                             color: AppTheme.surface,
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: AppTheme.textSecondary.withOpacity(0.05)),
+                            border: Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.05)),
                             boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
                           ),
                           child: Column(
@@ -443,7 +567,7 @@ class _AiScannerScreenState extends State<AiScannerScreen> with SingleTickerProv
                                         width: 24,
                                         height: 24,
                                         decoration: BoxDecoration(
-                                          color: AppTheme.primary.withOpacity(0.15),
+                                          color: AppTheme.primary.withValues(alpha: 0.15),
                                           borderRadius: BorderRadius.circular(12),
                                         ),
                                         child: Center(
@@ -477,7 +601,7 @@ class _AiScannerScreenState extends State<AiScannerScreen> with SingleTickerProv
                                   });
                                 },
                                 style: OutlinedButton.styleFrom(
-                                  side: BorderSide(color: AppTheme.textSecondary.withOpacity(0.3), width: 1.5),
+                                  side: BorderSide(color: AppTheme.textSecondary.withValues(alpha: 0.3), width: 1.5),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                   padding: const EdgeInsets.symmetric(vertical: 18),
                                 ),
@@ -508,7 +632,7 @@ class _AiScannerScreenState extends State<AiScannerScreen> with SingleTickerProv
                     GradientButton(
                       label: _isScanning ? "Scanning..." : "Scan Pet",
                       isLoading: _isScanning,
-                      onPressed: _selectedImage != null && !_isScanning ? _startScan : null,
+                      onPressed: !_isScanning ? (_selectedPetId == null ? _requirePetSnackBar : (_selectedImage != null ? _startScan : null)) : null,
                     ),
                     const SizedBox(height: 16),
                     SizedBox(
@@ -516,7 +640,7 @@ class _AiScannerScreenState extends State<AiScannerScreen> with SingleTickerProv
                       child: OutlinedButton(
                         onPressed: _pickImage,
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: AppTheme.textSecondary.withOpacity(0.3), width: 1.5),
+                          side: BorderSide(color: AppTheme.textSecondary.withValues(alpha: 0.3), width: 1.5),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           padding: const EdgeInsets.symmetric(vertical: 18),
                         ),
@@ -550,13 +674,13 @@ class _SeverityChip extends StatelessWidget {
     Color textColor;
 
     if (severity == "High") {
-      bgColor = AppTheme.error.withOpacity(0.15);
+      bgColor = AppTheme.error.withValues(alpha: 0.15);
       textColor = AppTheme.error;
     } else if (severity == "Medium") {
-      bgColor = AppTheme.secondary.withOpacity(0.15);
+      bgColor = AppTheme.secondary.withValues(alpha: 0.15);
       textColor = AppTheme.secondary;
     } else {
-      bgColor = AppTheme.success.withOpacity(0.15);
+      bgColor = AppTheme.success.withValues(alpha: 0.15);
       textColor = AppTheme.success;
     }
 

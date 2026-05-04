@@ -12,7 +12,7 @@ import 'test_health_records_screen.dart';
 import 'test_scanner_screen.dart';
 
 class TestRunnerScreen extends StatelessWidget {
-  const TestRunnerScreen({Key? key}) : super(key: key);
+  const TestRunnerScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

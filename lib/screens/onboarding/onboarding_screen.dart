@@ -73,17 +73,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         Container(
           decoration: BoxDecoration(
             gradient: RadialGradient(
-              colors: [const Color(0xFFFF8C42).withOpacity(0.08), Colors.transparent],
+              colors: [const Color(0xFFFF8C42).withValues(alpha: 0.08), Colors.transparent],
               center: Alignment.center,
               radius: 1.5,
             ),
           ),
         ),
-        Positioned(top: -50, left: -100, child: _Circle(size: 300, color: const Color(0xFFFF8C42).withOpacity(0.06))),
-        Positioned(bottom: -50, right: -100, child: _Circle(size: 350, color: const Color(0xFFFF8C42).withOpacity(0.06))),
-        Positioned(top: 200, right: -50, child: _Circle(size: 200, color: const Color(0xFFFF8C42).withOpacity(0.06))),
-        Positioned(bottom: 150, left: -50, child: _Circle(size: 150, color: const Color(0xFFFFD166).withOpacity(0.04))),
-        Positioned(top: 100, left: 150, child: _Circle(size: 100, color: const Color(0xFFFFD166).withOpacity(0.04))),
+        Positioned(top: -50, left: -100, child: _Circle(size: 300, color: const Color(0xFFFF8C42).withValues(alpha: 0.06))),
+        Positioned(bottom: -50, right: -100, child: _Circle(size: 350, color: const Color(0xFFFF8C42).withValues(alpha: 0.06))),
+        Positioned(top: 200, right: -50, child: _Circle(size: 200, color: const Color(0xFFFF8C42).withValues(alpha: 0.06))),
+        Positioned(bottom: 150, left: -50, child: _Circle(size: 150, color: const Color(0xFFFFD166).withValues(alpha: 0.04))),
+        Positioned(top: 100, left: 150, child: _Circle(size: 100, color: const Color(0xFFFFD166).withValues(alpha: 0.04))),
       ],
     );
   }
@@ -93,10 +93,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: const Color(0xFFFF8C42).withOpacity(0.2), width: 1),
+        border: Border.all(color: const Color(0xFFFF8C42).withValues(alpha: 0.2), width: 1),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF8C42).withOpacity(0.15),
+            color: const Color(0xFFFF8C42).withValues(alpha: 0.15),
             blurRadius: 40,
             spreadRadius: -8,
             offset: const Offset(0, 20),
@@ -109,7 +109,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           filter: ui.ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
             padding: const EdgeInsets.all(28),
-            color: const Color(0xFF3D2C00).withOpacity(0.92),
+            color: const Color(0xFF3D2C00).withValues(alpha: 0.92),
             child: child,
           ),
         ),
@@ -147,7 +147,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: RadialGradient(
-                                colors: [pageColor.withOpacity(0.2), Colors.transparent],
+                                colors: [pageColor.withValues(alpha: 0.2), Colors.transparent],
                                 stops: const [0.3, 1.0],
                               ),
                             ),
@@ -159,7 +159,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   height: 160,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: pageColor.withOpacity(0.3), width: 2),
+                                    border: Border.all(color: pageColor.withValues(alpha: 0.3), width: 2),
                                   ),
                                 ),
                                 Container(
@@ -167,7 +167,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   height: 100,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: pageColor.withOpacity(0.15),
+                                    color: pageColor.withValues(alpha: 0.15),
                                   ),
                                   child: Center(
                                     child: Icon(
@@ -228,7 +228,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 decoration: BoxDecoration(
                                   color: _currentPage == index
                                       ? const Color(0xFFFF8C42)
-                                      : AppTheme.textSecondary.withOpacity(0.4),
+                                      : AppTheme.textSecondary.withValues(alpha: 0.4),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                               ),

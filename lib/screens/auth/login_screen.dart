@@ -42,7 +42,12 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_formKey.currentState?.validate() ?? false) {
       await _authProvider.login(_emailCtrl.text.trim(), _passwordCtrl.text);
       if (_authProvider.value.currentUser != null && mounted) {
-        context.go('/dashboard');
+        final role = _authProvider.value.role;
+        if (role == 'admin') {
+          context.go('/admin/dashboard');
+        } else {
+          context.go('/dashboard');
+        }
       }
     }
   }
@@ -50,18 +55,18 @@ class _LoginScreenState extends State<LoginScreen> {
   InputDecoration _buildInputDecoration(String hint, IconData prefixIcon, {Widget? suffixIcon}) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: GoogleFonts.nunito(color: AppTheme.textSecondary.withOpacity(0.5)),
+      hintStyle: GoogleFonts.nunito(color: AppTheme.textSecondary.withValues(alpha: 0.5)),
       prefixIcon: Icon(prefixIcon, color: AppTheme.textSecondary),
       suffixIcon: suffixIcon,
       filled: true,
-      fillColor: const Color(0xFF1A1200).withOpacity(0.5),
+      fillColor: const Color(0xFF1A1200).withValues(alpha: 0.5),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: AppTheme.textSecondary.withOpacity(0.1)),
+        borderSide: BorderSide(color: AppTheme.textSecondary.withValues(alpha: 0.1)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: AppTheme.textSecondary.withOpacity(0.1)),
+        borderSide: BorderSide(color: AppTheme.textSecondary.withValues(alpha: 0.1)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
@@ -77,17 +82,17 @@ class _LoginScreenState extends State<LoginScreen> {
         Container(
           decoration: BoxDecoration(
             gradient: RadialGradient(
-              colors: [const Color(0xFFFF8C42).withOpacity(0.08), Colors.transparent],
+              colors: [const Color(0xFFFF8C42).withValues(alpha: 0.08), Colors.transparent],
               center: Alignment.center,
               radius: 1.5,
             ),
           ),
         ),
-        Positioned(top: -50, left: -100, child: _Circle(size: 300, color: const Color(0xFFFF8C42).withOpacity(0.06))),
-        Positioned(bottom: -50, right: -100, child: _Circle(size: 350, color: const Color(0xFFFF8C42).withOpacity(0.06))),
-        Positioned(top: 200, right: -50, child: _Circle(size: 200, color: const Color(0xFFFF8C42).withOpacity(0.06))),
-        Positioned(bottom: 150, left: -50, child: _Circle(size: 150, color: const Color(0xFFFFD166).withOpacity(0.04))),
-        Positioned(top: 100, left: 150, child: _Circle(size: 100, color: const Color(0xFFFFD166).withOpacity(0.04))),
+        Positioned(top: -50, left: -100, child: _Circle(size: 300, color: const Color(0xFFFF8C42).withValues(alpha: 0.06))),
+        Positioned(bottom: -50, right: -100, child: _Circle(size: 350, color: const Color(0xFFFF8C42).withValues(alpha: 0.06))),
+        Positioned(top: 200, right: -50, child: _Circle(size: 200, color: const Color(0xFFFF8C42).withValues(alpha: 0.06))),
+        Positioned(bottom: 150, left: -50, child: _Circle(size: 150, color: const Color(0xFFFFD166).withValues(alpha: 0.04))),
+        Positioned(top: 100, left: 150, child: _Circle(size: 100, color: const Color(0xFFFFD166).withValues(alpha: 0.04))),
       ],
     );
   }
@@ -97,10 +102,10 @@ class _LoginScreenState extends State<LoginScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: const Color(0xFFFF8C42).withOpacity(0.2), width: 1),
+        border: Border.all(color: const Color(0xFFFF8C42).withValues(alpha: 0.2), width: 1),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF8C42).withOpacity(0.15),
+            color: const Color(0xFFFF8C42).withValues(alpha: 0.15),
             blurRadius: 40,
             spreadRadius: -8,
             offset: const Offset(0, 20),
@@ -113,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
           filter: ui.ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
             padding: const EdgeInsets.all(28),
-            color: const Color(0xFF3D2C00).withOpacity(0.92),
+            color: const Color(0xFF3D2C00).withValues(alpha: 0.92),
             child: child,
           ),
         ),
@@ -268,7 +273,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(height: 20),
                             Row(
                               children: [
-                                Expanded(child: Divider(color: AppTheme.textSecondary.withOpacity(0.3), thickness: 1)),
+                                Expanded(child: Divider(color: AppTheme.textSecondary.withValues(alpha: 0.3), thickness: 1)),
                                 Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                                   child: Text(
@@ -276,15 +281,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                     style: GoogleFonts.nunito(fontSize: 13, color: AppTheme.textSecondary, fontWeight: FontWeight.normal),
                                   ),
                                 ),
-                                Expanded(child: Divider(color: AppTheme.textSecondary.withOpacity(0.3), thickness: 1)),
+                                Expanded(child: Divider(color: AppTheme.textSecondary.withValues(alpha: 0.3), thickness: 1)),
                               ],
                             ),
                             const SizedBox(height: 20),
                             OutlinedButton(
-                              onPressed: () => context.go('/register'),
+                              onPressed: () => context.push('/register'),
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(vertical: 18.0),
-                                side: BorderSide(color: AppTheme.textSecondary.withOpacity(0.3), width: 1.5),
+                                side: BorderSide(color: AppTheme.textSecondary.withValues(alpha: 0.3), width: 1.5),
                                 shape: RoundedRectangleBorder(borderRadius: AppTheme.buttonRadius),
                               ),
                               child: Text(

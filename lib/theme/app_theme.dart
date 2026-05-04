@@ -32,7 +32,7 @@ class AppTheme {
         surface: surface,
         error: error,
       ).copyWith(
-        background: background,
+        surface: background,
       ),
       textTheme: baseTextTheme.copyWith(
         displayLarge: GoogleFonts.outfit(textStyle: baseTextTheme.displayLarge, fontWeight: FontWeight.w700),
@@ -60,15 +60,15 @@ class AppTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: surface,
-        indicatorColor: primary.withOpacity(0.2),
-        labelTextStyle: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        indicatorColor: primary.withValues(alpha: 0.2),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return GoogleFonts.nunito(color: primary, fontWeight: FontWeight.bold, fontSize: 12);
           }
           return GoogleFonts.nunito(color: textSecondary, fontWeight: FontWeight.w500, fontSize: 12);
         }),
-        iconTheme: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return const IconThemeData(color: primary, size: 26);
           }
           return const IconThemeData(color: textSecondary, size: 24);
