@@ -140,19 +140,18 @@ class AboutScreen extends StatelessWidget {
                         // CCT Logo
                         Column(
                           children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
+                            ClipOval(
                               child: Image.asset(
                                 'assets/images/cct_logo.png',
-                                width: 72,
-                                height: 72,
+                                width: 80,
+                                height: 80,
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
                                   return Container(
-                                    width: 72,
-                                    height: 72,
+                                    width: 80,
+                                    height: 80,
                                     decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(16),
+                                      shape: BoxShape.circle,
                                       color: AppTheme.primary.withValues(alpha: 0.15),
                                       border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
                                     ),
@@ -173,19 +172,18 @@ class AboutScreen extends StatelessWidget {
                         // Department Logo
                         Column(
                           children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
+                            ClipOval(
                               child: Image.asset(
                                 'assets/images/dept_logo.png',
-                                width: 72,
-                                height: 72,
+                                width: 80,
+                                height: 80,
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
                                   return Container(
-                                    width: 72,
-                                    height: 72,
+                                    width: 80,
+                                    height: 80,
                                     decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(16),
+                                      shape: BoxShape.circle,
                                       color: AppTheme.primary.withValues(alpha: 0.15),
                                       border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
                                     ),
@@ -196,7 +194,7 @@ class AboutScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'School of Computer Studies',
+                              'SCS',
                               style: GoogleFonts.nunito(fontSize: 11, color: AppTheme.textSecondary),
                               textAlign: TextAlign.center,
                             ),
@@ -311,7 +309,7 @@ class AboutScreen extends StatelessWidget {
     required String assetPath,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppTheme.card,
         borderRadius: BorderRadius.circular(16),
@@ -326,28 +324,36 @@ class AboutScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: Image.asset(
-              assetPath,
-              width: 48,
-              height: 48,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => CircleAvatar(
-                radius: 24,
-                backgroundColor: AppTheme.primary.withValues(alpha: 0.2),
-                child: Text(
-                  initials,
-                  style: GoogleFonts.outfit(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.primary,
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppTheme.primary.withValues(alpha: 0.3),
+                width: 2,
+              ),
+            ),
+            child: ClipOval(
+              child: Image.asset(
+                assetPath,
+                width: 64,
+                height: 64,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => CircleAvatar(
+                  radius: 32,
+                  backgroundColor: AppTheme.primary.withValues(alpha: 0.2),
+                  child: Text(
+                    initials,
+                    style: GoogleFonts.outfit(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primary,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
