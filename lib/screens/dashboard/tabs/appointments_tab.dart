@@ -161,6 +161,8 @@ class _AppointmentsTabState extends State<AppointmentsTab> {
                           child: AppointmentCard(
                             appointment: appointment,
                             petName: pet?.name,
+                            appointmentProvider: _appointmentProvider,
+                            pets: pList,
                             onCancel: isCancelable ? () {
                               showDialog(
                                 context: context,

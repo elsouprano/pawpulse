@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
 import 'dashboard_inherited.dart';
@@ -17,6 +18,18 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final tabStr = GoRouterState.of(context).uri.queryParameters['tab'];
+      final tab = int.tryParse(tabStr ?? '0') ?? 0;
+      if (tab != 0 && tab >= 0 && tab < 5) {
+        setState(() => _currentIndex = tab);
+      }
+    });
+  }
 
   final List<Widget> _tabs = const [
     OverviewTab(),

@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
@@ -858,6 +859,7 @@ return Column(
                                   )
                                 else ...[
                                   _buildStatCards(petList.length, upcomingCount, alertCount),
+                                  _buildClinicCard(),
                                   _buildMyPetsPreview(petList),
                                   _buildUpcoming(upcomingList),
                                   _buildVaccinationReminders(petList),
@@ -877,6 +879,68 @@ return Column(
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildClinicCard() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppTheme.card,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primary.withValues(alpha: 0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.local_hospital_outlined, size: 16, color: AppTheme.primary),
+                      const SizedBox(width: 6),
+                      Text('Our Clinic', style: GoogleFonts.nunito(fontSize: 12, color: AppTheme.textSecondary)),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text('Vet District Animal Clinic', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.access_time, size: 14, color: AppTheme.accent),
+                      const SizedBox(width: 4),
+                      Text('Mon–Sat · 8:00 AM – 5:00 PM', style: GoogleFonts.nunito(fontSize: 12, color: AppTheme.accent)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            GestureDetector(
+              onTap: () => context.push('/clinic'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text('View Details', style: GoogleFonts.nunito(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primary)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

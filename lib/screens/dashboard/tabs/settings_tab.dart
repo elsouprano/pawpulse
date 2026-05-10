@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -162,92 +161,7 @@ class _SettingsTabState extends State<SettingsTab> {
     );
   }
 
-  void _handleDeleteAccount() {
-    int countdown = 10;
-    bool canDelete = false;
-    Timer? deleteTimer;
 
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            deleteTimer ??= Timer.periodic(const Duration(seconds: 1), (timer) {
-              if (countdown > 0) {
-                setState(() => countdown--);
-              } else {
-                setState(() => canDelete = true);
-                timer.cancel();
-              }
-            });
-
-            return AlertDialog(
-              backgroundColor: AppTheme.surface,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              title: Row(
-                children: [
-                  const Icon(Icons.warning_amber_rounded, color: AppTheme.error),
-                  const SizedBox(width: 12),
-                  Text("Delete Account", style: GoogleFonts.outfit(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
-                ],
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "This will permanently delete your PawPulse account and all pet data. This action cannot be undone.",
-                    style: GoogleFonts.nunito(color: AppTheme.textSecondary, fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    canDelete ? "You can now confirm deletion" : "You can confirm deletion in ${countdown}s",
-                    style: GoogleFonts.nunito(
-                      fontSize: 13,
-                      color: canDelete ? AppTheme.error : AppTheme.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    deleteTimer?.cancel();
-                    Navigator.pop(dialogContext);
-                  },
-                  child: Text("Cancel", style: GoogleFonts.nunito(color: AppTheme.textSecondary, fontWeight: FontWeight.bold)),
-                ),
-                TextButton(
-                  onPressed: canDelete ? () async {
-                    deleteTimer?.cancel();
-                    Navigator.pop(dialogContext);
-                    try {
-                      await firebase_auth.FirebaseAuth.instance.currentUser?.delete();
-                      await _authProvider.logout();
-                    } catch (e) {
-                      if (!mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Failed to delete account.", style: GoogleFonts.nunito(fontWeight: FontWeight.bold)), backgroundColor: AppTheme.error),
-                      );
-                    }
-                  } : null,
-                  child: Text(
-                    canDelete ? "Delete" : "Delete (${countdown}s)",
-                    style: GoogleFonts.nunito(
-                      color: canDelete ? AppTheme.error : AppTheme.textSecondary.withValues(alpha: 0.5),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    ).then((_) {
-      deleteTimer?.cancel();
-    });
-  }
 
   void _handleSignOut() {
     showDialog(
@@ -594,14 +508,7 @@ class _SettingsTabState extends State<SettingsTab> {
                       subtitle: "Send a reset link to your email",
                       onTap: _handleResetPassword,
                     ),
-                    _divider(),
-                    _actionTile(
-                      icon: Icons.delete_forever_rounded,
-                      iconColor: AppTheme.error,
-                      title: "Delete Account",
-                      subtitle: "Permanently delete your account and all data",
-                      onTap: _handleDeleteAccount,
-                    ),
+
                   ],
                 ),
               ),
@@ -626,34 +533,50 @@ class _SettingsTabState extends State<SettingsTab> {
                         width: 36,
                         height: 36,
                         decoration: BoxDecoration(
-                          color: AppTheme.accent.withValues(alpha: 0.12),
+                          color: AppTheme.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(
-                          Icons.medical_services_outlined,
+                          Icons.privacy_tip_outlined,
                           size: 18,
-                          color: AppTheme.accent,
+                          color: AppTheme.primary,
                         ),
                       ),
                       title: Text(
-                        "Our Services",
+                        'Privacy Policy',
                         style: GoogleFonts.nunito(
                           fontSize: 14,
                           color: AppTheme.textPrimary,
                         ),
                       ),
-                      subtitle: Text(
-                        "View clinic services offered",
-                        style: GoogleFonts.nunito(
-                          fontSize: 12,
-                          color: AppTheme.textSecondary,
+                      trailing: const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+                      onTap: () => context.push('/privacy-policy'),
+                    ),
+                    _divider(),
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      leading: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.gavel_outlined,
+                          size: 18,
+                          color: AppTheme.primary,
                         ),
                       ),
-                      trailing: const Icon(
-                        Icons.chevron_right,
-                        color: AppTheme.textSecondary,
+                      title: Text(
+                        'Terms & Conditions',
+                        style: GoogleFonts.nunito(
+                          fontSize: 14,
+                          color: AppTheme.textPrimary,
+                        ),
                       ),
-                      onTap: () => context.push('/about'),
+                      trailing: const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+                      onTap: () => context.push('/terms'),
                     ),
                     _divider(),
                     ListTile(

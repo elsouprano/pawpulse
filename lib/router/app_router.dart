@@ -12,6 +12,9 @@ import '../screens/scanner/ai_scanner_screen.dart';
 import '../screens/pets/pet_detail_screen.dart';
 import '../screens/admin/admin_dashboard_screen.dart';
 import '../screens/about/about_screen.dart';
+import '../screens/clinic/clinic_screen.dart';
+import '../screens/legal/privacy_policy_screen.dart';
+import '../screens/legal/terms_screen.dart';
 
 class AppRouter {
   static GoRouter createRouter(AuthProvider authProvider) {
@@ -118,6 +121,18 @@ class AppRouter {
         GoRoute(
           path: '/about',
           builder: (context, state) => const AboutScreen(),
+        ),
+        GoRoute(
+          path: '/clinic',
+          builder: (context, state) => const ClinicScreen(),
+        ),
+        GoRoute(
+          path: '/privacy-policy',
+          builder: (context, state) => const PrivacyPolicyScreen(),
+        ),
+        GoRoute(
+          path: '/terms',
+          builder: (context, state) => const TermsScreen(),
         ),
       ],
     );

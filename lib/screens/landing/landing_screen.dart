@@ -285,24 +285,14 @@ class LandingScreen extends StatelessWidget {
         description: "Maintain your pet's oral health and hygiene",
       ),
       _ServiceItem(
-        icon: Icons.biotech_outlined,
-        name: 'Surgery',
-        description: 'Safe and professional surgical procedures',
-      ),
-      _ServiceItem(
         icon: Icons.healing_outlined,
         name: 'Deworming',
         description: 'Parasite prevention and treatment',
       ),
       _ServiceItem(
-        icon: Icons.science_outlined,
-        name: 'Laboratory Testing',
-        description: 'Accurate diagnostics for better treatment',
-      ),
-      _ServiceItem(
-        icon: Icons.emergency_outlined,
-        name: 'Emergency Care',
-        description: '24/7 urgent care for your beloved pets',
+        icon: Icons.access_time_outlined,
+        name: 'Clinic Hours',
+        description: 'Open Monday to Saturday, 8:00 AM – 5:00 PM',
       ),
     ];
 

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/appointment_model.dart';
+import '../../models/pet_model.dart';
+import '../../providers/appointment_provider.dart';
 import '../../theme/app_theme.dart';
 import 'package:intl/intl.dart';
+import 'book_appointment_bottom_sheet.dart';
 
 class AppointmentCard extends StatelessWidget {
   final AppointmentModel appointment;
@@ -11,6 +14,8 @@ class AppointmentCard extends StatelessWidget {
 
   // Extra mapping optionally passed if we have pet data
   final String? petName;
+  final AppointmentProvider? appointmentProvider;
+  final List<PetModel>? pets;
 
   const AppointmentCard({
     super.key,
@@ -18,6 +23,8 @@ class AppointmentCard extends StatelessWidget {
     this.onCancel,
     this.onReschedule,
     this.petName,
+    this.appointmentProvider,
+    this.pets,
   });
 
   @override
@@ -26,7 +33,10 @@ class AppointmentCard extends StatelessWidget {
     final dayStr = DateFormat('dd').format(dt);
     final monthStr = DateFormat('MMM').format(dt).toUpperCase();
 
-    return Container(
+    final isCompleted = appointment.status == "Completed";
+    final isCancelled = appointment.status == "Cancelled";
+
+    Widget cardContent = Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: AppTheme.card,
@@ -114,6 +124,20 @@ class AppointmentCard extends StatelessWidget {
                     ),
                   ],
                 ),
+                if (appointment.status == "Completed" && appointmentProvider != null && pets != null) ...[
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.calendar_month_outlined, size: 16),
+                    label: Text("Book Again", style: GoogleFonts.nunito(fontSize: 12, fontWeight: FontWeight.bold)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.primary,
+                      side: const BorderSide(color: AppTheme.primary),
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6)
+                    ),
+                    onPressed: () => BookAppointmentBottomSheet.show(context, appointmentProvider!, pets!),
+                  ),
+                ],
               ],
             ),
           ),
@@ -121,47 +145,57 @@ class AppointmentCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               _StatusChip(status: appointment.status),
-              const SizedBox(height: 12),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert_rounded, size: 20, color: AppTheme.textSecondary),
-                padding: EdgeInsets.zero,
-                color: AppTheme.surface,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                onSelected: (value) {
-                  if (value == "reschedule" && onReschedule != null) {
-                    onReschedule!();
-                  } else if (value == "cancel" && onCancel != null) {
-                    onCancel!();
-                  }
-                },
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: "reschedule",
-                    child: Row(
-                      children: [
-                        const Icon(Icons.edit_calendar_rounded, size: 18, color: AppTheme.textPrimary),
-                        const SizedBox(width: 12),
-                        Text("Reschedule", style: GoogleFonts.nunito(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
-                      ],
+              if (appointment.status != "Completed" && appointment.status != "Cancelled") ...[
+                const SizedBox(height: 12),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert_rounded, size: 20, color: AppTheme.textSecondary),
+                  padding: EdgeInsets.zero,
+                  color: AppTheme.surface,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  onSelected: (value) {
+                    if (value == "reschedule" && onReschedule != null) {
+                      onReschedule!();
+                    } else if (value == "cancel" && onCancel != null) {
+                      onCancel!();
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: "reschedule",
+                      child: Row(
+                        children: [
+                          const Icon(Icons.edit_calendar_rounded, size: 18, color: AppTheme.textPrimary),
+                          const SizedBox(width: 12),
+                          Text("Reschedule", style: GoogleFonts.nunito(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                        ],
+                      ),
                     ),
-                  ),
-                  PopupMenuItem(
-                    value: "cancel",
-                    child: Row(
-                      children: [
-                        const Icon(Icons.cancel_outlined, size: 18, color: AppTheme.error),
-                        const SizedBox(width: 12),
-                        Text("Cancel", style: GoogleFonts.nunito(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.error)),
-                      ],
+                    PopupMenuItem(
+                      value: "cancel",
+                      child: Row(
+                        children: [
+                          const Icon(Icons.cancel_outlined, size: 18, color: AppTheme.error),
+                          const SizedBox(width: 12),
+                          Text("Cancel", style: GoogleFonts.nunito(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.error)),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ],
           ),
         ],
       ),
     );
+
+    if (isCompleted) {
+      return Opacity(opacity: 0.85, child: cardContent);
+    } else if (isCancelled) {
+      return Opacity(opacity: 0.75, child: cardContent);
+    }
+    
+    return cardContent;
   }
 }
 

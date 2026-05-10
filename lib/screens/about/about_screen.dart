@@ -134,33 +134,79 @@ class AboutScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Image.asset(
-                        'assets/images/cct_logo.png',
-                        width: 80,
-                        height: 80,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // CCT Logo
+                        Column(
+                          children: [
+                            ClipRRect(
                               borderRadius: BorderRadius.circular(16),
-                              color: AppTheme.primary.withValues(alpha: 0.15),
+                              child: Image.asset(
+                                'assets/images/cct_logo.png',
+                                width: 72,
+                                height: 72,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: 72,
+                                    height: 72,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(16),
+                                      color: AppTheme.primary.withValues(alpha: 0.15),
+                                      border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
+                                    ),
+                                    child: const Icon(Icons.school_outlined, size: 36, color: AppTheme.primary),
+                                  );
+                                },
+                              ),
                             ),
-                            child: const Icon(
-                              Icons.school_outlined,
-                              size: 40,
-                              color: AppTheme.primary,
+                            const SizedBox(height: 6),
+                            Text(
+                              'CCT',
+                              style: GoogleFonts.nunito(fontSize: 11, color: AppTheme.textSecondary),
+                              textAlign: TextAlign.center,
                             ),
-                          );
-                        },
-                      ),
+                          ],
+                        ),
+                        const SizedBox(width: 20),
+                        // Department Logo
+                        Column(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Image.asset(
+                                'assets/images/dept_logo.png',
+                                width: 72,
+                                height: 72,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: 72,
+                                    height: 72,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(16),
+                                      color: AppTheme.primary.withValues(alpha: 0.15),
+                                      border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
+                                    ),
+                                    child: const Icon(Icons.account_balance_outlined, size: 36, color: AppTheme.primary),
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'School of Computer Studies',
+                              style: GoogleFonts.nunito(fontSize: 11, color: AppTheme.textSecondary),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      "City College of Tagaytay",
+                      'City College of Tagaytay',
                       style: GoogleFonts.outfit(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -170,48 +216,15 @@ class AboutScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "Tagaytay City, Cavite, Philippines",
-                      style: GoogleFonts.nunito(
-                        fontSize: 13,
-                        color: AppTheme.textSecondary,
-                      ),
+                      'Tagaytay City, Cavite, Philippines',
+                      style: GoogleFonts.nunito(fontSize: 13, color: AppTheme.textSecondary),
                       textAlign: TextAlign.center,
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 32),
 
-              // ── Our Services Section ──
-              Text(
-                "Our Services",
-                style: GoogleFonts.outfit(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textSecondary,
-                  letterSpacing: 0.8,
-                ),
-              ),
-              const SizedBox(height: 12),
-              GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.1,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _buildServiceCard(Icons.medical_services_outlined, "General Consultation", "Comprehensive health assessment for your pet"),
-                  _buildServiceCard(Icons.vaccines_outlined, "Vaccination", "Keep your pet protected with scheduled vaccines"),
-                  _buildServiceCard(Icons.content_cut, "Grooming", "Professional grooming for a clean and happy pet"),
-                  _buildServiceCard(Icons.sanitizer_outlined, "Dental Cleaning", "Maintain your pet's oral health and hygiene"),
-                  _buildServiceCard(Icons.healing_outlined, "Deworming", "Parasite prevention and treatment"),
-                  _buildServiceCard(Icons.access_time_outlined, "Clinic Hours", "Open Monday to Saturday, 8:00 AM to 5:00 PM"),
-                ],
-              ),
-
-              const SizedBox(height: 32),
 
               // ── Developers Section ──
               Text(
@@ -287,50 +300,6 @@ class AboutScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildServiceCard(IconData icon, String name, String description) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppTheme.primary.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, size: 20, color: AppTheme.primary),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            name,
-            style: GoogleFonts.outfit(
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            description,
-            style: GoogleFonts.nunito(
-              fontSize: 11,
-              color: AppTheme.textSecondary,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
       ),
     );
   }
